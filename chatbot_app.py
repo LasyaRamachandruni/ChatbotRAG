@@ -1,7 +1,7 @@
 
 import os
 import streamlit as st
-from llama_index import VectorStoreIndex, SimpleDirectoryReader, ServiceContext
+from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, ServiceContext
 from llama_index.llms import OpenAI
 
 openai_api_key = os.getenv("OPENAI_API_KEY", "your-api-key-here")
