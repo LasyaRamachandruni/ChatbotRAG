@@ -22,9 +22,25 @@ user_input = st.text_input("You:")
 
 if user_input:
     response = query_engine.query(user_input)
-    response_text = "\n\n".join([node.get_text() for node in response.source_nodes])
+    response_text = ""
+
+    # Collect best-matching lines
+    for node in response.source_nodes:
+        lines = node.get_text().splitlines()
+        match_lines = [
+            line.strip()
+            for line in lines
+            if any(word in line.lower() for word in user_input.lower().split())
+        ]
+        if match_lines:
+            response_text = "\n".join(match_lines)
+            break
+
+    if not response_text:
+        response_text = "No relevant information found."
+
     st.session_state.chat_history.append(("You", user_input))
-    st.session_state.chat_history.append(("Bot", response_text or "No relevant information found."))
+    st.session_state.chat_history.append(("Bot", response_text))
 
 for speaker, text in st.session_state.chat_history:
     st.markdown(f"**{speaker}:** {text}")
