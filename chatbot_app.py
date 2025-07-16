@@ -2,6 +2,7 @@ import os
 import streamlit as st
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+import re
 
 embed_model = HuggingFaceEmbedding(model_name="all-MiniLM-L6-v2")
 
@@ -24,16 +25,17 @@ if user_input:
     response = query_engine.query(user_input)
     response_text = ""
 
-    # Collect best-matching lines
+    user_words = set(user_input.lower().split())
+
+    # Normalize and scan each line of text
     for node in response.source_nodes:
         lines = node.get_text().splitlines()
-        match_lines = [
-            line.strip()
-            for line in lines
-            if any(word in line.lower() for word in user_input.lower().split())
-        ]
-        if match_lines:
-            response_text = "\n".join(match_lines)
+        for line in lines:
+            plain_line = re.sub(r'\*\*|__|[#\-]', '', line).strip().lower()
+            if any(word in plain_line for word in user_words):
+                response_text = line.strip()
+                break
+        if response_text:
             break
 
     if not response_text:
