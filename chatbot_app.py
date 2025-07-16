@@ -27,12 +27,15 @@ if user_input:
 
     user_words = set(user_input.lower().split())
 
-    # Normalize and scan each line of text
     for node in response.source_nodes:
         lines = node.get_text().splitlines()
         for line in lines:
             plain_line = re.sub(r'\*\*|__|[#\-]', '', line).strip().lower()
-            if any(word in plain_line for word in user_words):
+            if (
+                "dean" in plain_line
+                and "assistant" not in plain_line
+                and (plain_line.startswith("dean") or "dean: " in plain_line)
+            ):
                 response_text = line.strip()
                 break
         if response_text:
