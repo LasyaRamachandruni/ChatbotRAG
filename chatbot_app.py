@@ -1,21 +1,21 @@
-
 import os
 import streamlit as st
-from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, ServiceContext
-from llama_index.llms.openai import OpenAI
+from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
+from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 
+# Use sentence-transformers for local embedding
+embed_model = HuggingFaceEmbedding(model_name="all-MiniLM-L6-v2")
 
-openai_api_key = os.getenv("OPENAI_API_KEY", "your-api-key-here")
-
-st.title("SJSU Library Chatbot 🤖")
-
+# Load documents
+st.title("SJSU Library Chatbot 🤖 (Free Local Mode)")
 with st.spinner("Loading knowledge base..."):
     documents = SimpleDirectoryReader("knowledge_base").load_data()
 
-service_context = ServiceContext.from_defaults(llm=OpenAI(api_key=openai_api_key))
-index = VectorStoreIndex.from_documents(documents, service_context=service_context)
-chat_engine = index.as_chat_engine(chat_mode="condense_question", verbose=True)
+# Build index
+index = VectorStoreIndex.from_documents(documents, embed_model=embed_model)
+chat_engine = index.as_chat_engine(chat_mode="condense_question", verbose=False)
 
+# Streamlit chat UI
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
@@ -29,3 +29,4 @@ if user_input:
 
 for speaker, text in st.session_state.chat_history:
     st.markdown(f"**{speaker}:** {text}")
+
