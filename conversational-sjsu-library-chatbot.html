@@ -1,0 +1,997 @@
+<!-- SJSU Library Conversational AI Chatbot - Complete with Follow-up Memory -->
+<!-- Copy this entire code block and paste it into Google Sites HTML embed -->
+
+<div id="sjsu-conversational-chatbot-widget"></div>
+
+<style>
+/* SJSU Library Conversational Chatbot Styles */
+#sjsu-conversational-chatbot-widget {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 10000;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.sjsu-conv-chatbot-button {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0055a2 0%, #003f7f 100%);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 32px rgba(0, 85, 162, 0.4);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+.sjsu-conv-chatbot-button:hover {
+    transform: scale(1.1) translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0, 85, 162, 0.5);
+}
+
+.sjsu-conv-chatbot-button::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0055a2 0%, #003f7f 100%);
+    opacity: 0.7;
+    animation: sjsu-conv-pulse 2s infinite;
+}
+
+@keyframes sjsu-conv-pulse {
+    0% { transform: scale(1); opacity: 0.7; }
+    50% { transform: scale(1.2); opacity: 0.3; }
+    100% { transform: scale(1); opacity: 0.7; }
+}
+
+.sjsu-conv-chatbot-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    position: relative;
+    z-index: 1;
+}
+
+.sjsu-conv-chat-container {
+    position: fixed;
+    bottom: 110px;
+    right: 20px;
+    width: 420px;
+    height: 650px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transform: translateY(20px) scale(0.95);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.sjsu-conv-chat-container.open {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+    visibility: visible;
+}
+
+.sjsu-conv-chat-header {
+    background: linear-gradient(135deg, #0055a2 0%, #003f7f 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 20px 20px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.sjsu-conv-chat-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.sjsu-conv-chat-header .subtitle {
+    font-size: 12px;
+    opacity: 0.9;
+    margin-top: 2px;
+}
+
+.sjsu-conv-close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+}
+
+.sjsu-conv-close-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.sjsu-conv-chat-messages {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.sjsu-conv-message {
+    max-width: 85%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    font-size: 14px;
+    line-height: 1.4;
+    word-wrap: break-word;
+}
+
+.sjsu-conv-message.bot {
+    background: linear-gradient(135deg, #f0f2f5 0%, #e8eaf0 100%);
+    color: #333;
+    align-self: flex-start;
+    border-bottom-left-radius: 6px;
+}
+
+.sjsu-conv-message.user {
+    background: linear-gradient(135deg, #0055a2 0%, #003f7f 100%);
+    color: white;
+    align-self: flex-end;
+    border-bottom-right-radius: 6px;
+}
+
+.sjsu-conv-quick-actions {
+    padding: 10px 15px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.sjsu-conv-quick-btn {
+    background: linear-gradient(135deg, #0055a2 0%, #003f7f 100%);
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.sjsu-conv-quick-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 85, 162, 0.3);
+}
+
+.sjsu-conv-input-area {
+    padding: 15px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.sjsu-conv-input {
+    flex: 1;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 20px;
+    padding: 12px 16px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.sjsu-conv-input:focus {
+    border-color: #0055a2;
+}
+
+.sjsu-conv-send-btn {
+    background: linear-gradient(135deg, #0055a2 0%, #003f7f 100%);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.sjsu-conv-send-btn:hover {
+    transform: scale(1.1);
+}
+
+.sjsu-conv-typing {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #f0f2f5 0%, #e8eaf0 100%);
+    border-radius: 18px;
+    border-bottom-left-radius: 6px;
+    align-self: flex-start;
+    max-width: 85%;
+}
+
+.sjsu-conv-typing-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #666;
+    animation: sjsu-conv-typing-animation 1.4s infinite ease-in-out;
+}
+
+.sjsu-conv-typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.sjsu-conv-typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes sjsu-conv-typing-animation {
+    0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+    40% { transform: scale(1); opacity: 1; }
+}
+
+.sjsu-conv-context-indicator {
+    background: rgba(0, 85, 162, 0.1);
+    color: #0055a2;
+    padding: 6px 12px;
+    border-radius: 15px;
+    font-size: 12px;
+    margin-bottom: 8px;
+    align-self: flex-start;
+}
+
+/* Mobile Responsive */
+@media (max-width: 480px) {
+    .sjsu-conv-chat-container {
+        width: calc(100vw - 40px);
+        height: calc(100vh - 140px);
+        right: 20px;
+        left: 20px;
+    }
+}
+</style>
+
+<script>
+class SJSUConversationalChatbot {
+    constructor() {
+        this.isOpen = false;
+        this.isTyping = false;
+        this.conversationHistory = [];
+        this.currentContext = null;
+        this.knowledgeBase = this.initializeKnowledgeBase();
+        this.init();
+    }
+
+    initializeKnowledgeBase() {
+        return {
+            // Real SJSU Library Staff Information
+            staff: {
+                'dean': { 
+                    name: 'Michael Meth', 
+                    title: 'Dean of University Library',
+                    email: 'michael.meth@sjsu.edu', 
+                    phone: '408-808-2000',
+                    office: 'King Library',
+                    bio: 'Dean since 2021, leads the Dr. Martin Luther King Jr. Library'
+                },
+                'main_contact': {
+                    name: 'Library Main Desk',
+                    phone: '408-808-2000',
+                    email: 'circulation@sjsu.edu',
+                    hours: 'Mon-Thu: 7am-12am, Fri: 7am-6pm, Sat: 10am-6pm, Sun: 12pm-12am'
+                },
+                'reference': {
+                    name: 'Research Help Desk',
+                    phone: '408-808-2193',
+                    email: 'ref-desk@sjsu.edu',
+                    location: '2nd Floor, King Library'
+                },
+                'special_collections': {
+                    name: 'Special Collections & Archives',
+                    phone: '408-808-2062',
+                    email: 'special.collections@sjsu.edu',
+                    location: '5th Floor, King Library'
+                }
+            },
+
+            // Library Services & Information
+            services: {
+                hours: {
+                    regular: 'Mon-Thu: 7am-12am, Fri: 7am-6pm, Sat: 10am-6pm, Sun: 12pm-12am',
+                    finals: 'Extended hours during finals week - check website for details',
+                    summer: 'Reduced hours during summer - Mon-Fri: 8am-8pm, Sat-Sun: 12pm-6pm',
+                    holidays: 'Closed on major holidays - check library calendar'
+                },
+                locations: {
+                    main: 'Dr. Martin Luther King Jr. Library, One Washington Square',
+                    floors: {
+                        'ground': 'Circulation, Reserves, Computer Lab',
+                        'first': 'Quiet Study, Individual Study Rooms',
+                        'second': 'Reference Desk, Research Help, Collaborative Study',
+                        'third': 'Books, Periodicals, Group Study Rooms',
+                        'fourth': 'Books, Silent Study Area',
+                        'fifth': 'Special Collections, Archives, Faculty Study',
+                        'sixth': 'Graduate Study, Dissertation Writing',
+                        'seventh': 'Silent Study, Individual Carrels',
+                        'eighth': 'Technical Services, Staff Offices'
+                    }
+                },
+                study_spaces: {
+                    'group_study_rooms': 'Bookable rooms for 2-8 people, located on floors 2-3',
+                    'individual_study': 'Carrels and desks throughout the library',
+                    'silent_study': 'Floors 4 and 7 - absolute quiet zones',
+                    'collaborative_study': 'Floor 2 - discussion and group work allowed',
+                    'computer_lab': 'Ground floor - 50+ computers with software'
+                },
+                research_help: {
+                    'research_consultations': 'One-on-one help with research projects',
+                    'subject_librarians': 'Specialists in different academic areas',
+                    'citation_help': 'APA, MLA, Chicago style assistance',
+                    'database_training': 'Learn to use academic databases effectively'
+                }
+            },
+
+            // Committees and Organizations
+            committees: {
+                'ULB': {
+                    name: 'University Library Board',
+                    description: 'Advisory board for library policies and strategic planning',
+                    members: 'Faculty representatives from each college plus student representatives',
+                    meetings: 'Monthly during academic year',
+                    contact: 'michael.meth@sjsu.edu'
+                },
+                'ULLT': {
+                    name: 'University Library Leadership Team',
+                    description: 'Internal library leadership and management team',
+                    members: 'Library department heads and senior staff',
+                    meetings: 'Bi-weekly',
+                    contact: 'Internal library staff only'
+                },
+                'faculty_senate_library': {
+                    name: 'Faculty Senate Library Committee',
+                    description: 'Faculty governance committee overseeing library matters',
+                    role: 'Reviews library policies, budget, and strategic initiatives'
+                }
+            },
+
+            // Forms and Procedures
+            forms: {
+                'library_card': {
+                    name: 'Library Card Application',
+                    process: 'Bring valid ID to circulation desk, fill out form, get card immediately',
+                    cost: 'Free for SJSU students, staff, faculty',
+                    location: 'Circulation Desk, Ground Floor'
+                },
+                'room_booking': {
+                    name: 'Study Room Reservation',
+                    process: 'Online booking system through library website',
+                    advance_booking: 'Up to 7 days in advance',
+                    duration: '2-hour maximum, can extend if available'
+                },
+                'interlibrary_loan': {
+                    name: 'Interlibrary Loan Request',
+                    process: 'Submit request through ILLiad system online',
+                    cost: 'Free for articles, $5 fee for books',
+                    turnaround: '3-7 business days for articles, 1-2 weeks for books'
+                },
+                'purchase_request': {
+                    name: 'Book/Resource Purchase Request',
+                    process: 'Faculty can request materials through online form',
+                    approval: 'Subject librarian and collection development review',
+                    timeline: '2-4 weeks for processing'
+                }
+            },
+
+            // Common Questions and Answers
+            faq: {
+                'printing': {
+                    question: 'How do I print in the library?',
+                    answer: 'Use PaperCut system with your SJSU ID card. $0.10 per page B&W, $0.50 color. Add money at stations or online.'
+                },
+                'wifi': {
+                    question: 'What is the WiFi password?',
+                    answer: 'Use "SJSU_Premier" network with your SJSU login credentials. Guest network available for visitors.'
+                },
+                'food_drink': {
+                    question: 'Can I bring food and drinks?',
+                    answer: 'Covered drinks allowed throughout. Food allowed in designated areas only (Ground floor lobby, 2nd floor collaborative space).'
+                },
+                'laptop_checkout': {
+                    question: 'Can I borrow a laptop?',
+                    answer: 'Yes! 4-hour checkout for SJSU students with ID. Available at circulation desk, subject to availability.'
+                }
+            }
+        };
+    }
+
+    init() {
+        this.createWidget();
+        this.bindEvents();
+        this.addWelcomeMessage();
+    }
+
+    createWidget() {
+        const widget = document.getElementById('sjsu-conversational-chatbot-widget');
+        
+        widget.innerHTML = `
+            <div class="sjsu-conv-chatbot-button" id="sjsu-conv-chatbot-button">
+                <img src="https://www.sjpl.org/sites/default/files/styles/hero_image/public/2023-09/king-library-entrance-dusk.jpg" 
+                     alt="King Library" class="sjsu-conv-chatbot-avatar">
+            </div>
+            
+            <div class="sjsu-conv-chat-container" id="sjsu-conv-chat-container">
+                <div class="sjsu-conv-chat-header">
+                    <div>
+                        <h3>🏛️ SJSU Library Assistant</h3>
+                        <div class="subtitle">Ask me anything • Follow-up friendly</div>
+                    </div>
+                    <button class="sjsu-conv-close-btn" id="sjsu-conv-close-btn">×</button>
+                </div>
+                
+                <div class="sjsu-conv-chat-messages" id="sjsu-conv-chat-messages"></div>
+                
+                <div class="sjsu-conv-quick-actions">
+                    <button class="sjsu-conv-quick-btn" onclick="sjsuConvBot.quickAction('hours')">📅 Hours</button>
+                    <button class="sjsu-conv-quick-btn" onclick="sjsuConvBot.quickAction('contact')">📞 Contact</button>
+                    <button class="sjsu-conv-quick-btn" onclick="sjsuConvBot.quickAction('study_rooms')">🏛️ Study Rooms</button>
+                    <button class="sjsu-conv-quick-btn" onclick="sjsuConvBot.quickAction('printing')">🖨️ Printing</button>
+                    <button class="sjsu-conv-quick-btn" onclick="sjsuConvBot.quickAction('research_help')">📚 Research Help</button>
+                    <button class="sjsu-conv-quick-btn" onclick="sjsuConvBot.quickAction('dean')">👨‍💼 Dean Info</button>
+                </div>
+                
+                <div class="sjsu-conv-input-area">
+                    <input type="text" class="sjsu-conv-input" id="sjsu-conv-input" 
+                           placeholder="Ask me anything about the library..." maxlength="500">
+                    <button class="sjsu-conv-send-btn" id="sjsu-conv-send-btn">➤</button>
+                </div>
+            </div>
+        `;
+    }
+
+    bindEvents() {
+        const button = document.getElementById('sjsu-conv-chatbot-button');
+        const closeBtn = document.getElementById('sjsu-conv-close-btn');
+        const sendBtn = document.getElementById('sjsu-conv-send-btn');
+        const input = document.getElementById('sjsu-conv-input');
+
+        button.addEventListener('click', () => this.toggleChat());
+        closeBtn.addEventListener('click', () => this.closeChat());
+        sendBtn.addEventListener('click', () => this.sendMessage());
+        
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.sendMessage();
+        });
+    }
+
+    toggleChat() {
+        this.isOpen = !this.isOpen;
+        const container = document.getElementById('sjsu-conv-chat-container');
+        container.classList.toggle('open', this.isOpen);
+        
+        if (this.isOpen) {
+            document.getElementById('sjsu-conv-input').focus();
+        }
+    }
+
+    closeChat() {
+        this.isOpen = false;
+        document.getElementById('sjsu-conv-chat-container').classList.remove('open');
+    }
+
+    addWelcomeMessage() {
+        setTimeout(() => {
+            this.addMessage('bot', `👋 **Hi! I'm your SJSU Library Assistant!**
+
+I can help you with:
+• 📞 **Staff contacts** (Dean Michael Meth, department heads, etc.)
+• 📅 **Library hours** and locations
+• 🏛️ **Study spaces** and room bookings  
+• 📚 **Research help** and services
+• 📋 **Forms and procedures**
+• 🤝 **Committees** (ULB, ULLT, etc.)
+• ❓ **Follow-up questions** - I remember our conversation!
+
+**Try asking:**
+• "What are the library hours?"
+• "How do I contact Dean Michael Meth?"
+• "Tell me about study rooms" → then "How do I book one?"
+• "Who is in the ULB committee?"
+
+What can I help you with today? 😊`);
+        }, 1000);
+    }
+
+    sendMessage() {
+        const input = document.getElementById('sjsu-conv-input');
+        const message = input.value.trim();
+        
+        if (!message || this.isTyping) return;
+        
+        this.addMessage('user', message);
+        this.conversationHistory.push({type: 'user', message: message, timestamp: Date.now()});
+        input.value = '';
+        
+        this.showTyping();
+        setTimeout(() => {
+            this.hideTyping();
+            this.generateConversationalResponse(message);
+        }, 1500);
+    }
+
+    quickAction(action) {
+        const actions = {
+            'hours': 'What are the library hours?',
+            'contact': 'How do I contact library staff?',
+            'study_rooms': 'Tell me about study rooms',
+            'printing': 'How do I print in the library?',
+            'research_help': 'How can I get research help?',
+            'dean': 'Who is the library dean?'
+        };
+        
+        if (actions[action]) {
+            this.addMessage('user', actions[action]);
+            this.conversationHistory.push({type: 'user', message: actions[action], timestamp: Date.now()});
+            this.showTyping();
+            setTimeout(() => {
+                this.hideTyping();
+                this.generateConversationalResponse(actions[action]);
+            }, 1500);
+        }
+    }
+
+    generateConversationalResponse(message) {
+        const lowerMessage = message.toLowerCase();
+        let response = '';
+        let contextIndicator = '';
+
+        // Check for follow-up context
+        const recentBotMessages = this.conversationHistory
+            .filter(msg => msg.type === 'bot')
+            .slice(-2)
+            .map(msg => msg.message.toLowerCase());
+
+        // Detect follow-up questions
+        const followUpIndicators = ['how', 'what about', 'tell me more', 'where', 'when', 'who', 'can you', 'more info', 'details', 'explain'];
+        const isFollowUp = followUpIndicators.some(indicator => lowerMessage.includes(indicator)) && this.conversationHistory.length > 0;
+
+        // Library Hours
+        if (lowerMessage.includes('hours') || lowerMessage.includes('open') || lowerMessage.includes('close')) {
+            response = `📅 **SJSU Library Hours:**
+
+**📚 Regular Hours:**
+${this.knowledgeBase.services.hours.regular}
+
+**📖 Finals Week:**
+${this.knowledgeBase.services.hours.finals}
+
+**☀️ Summer Hours:**
+${this.knowledgeBase.services.hours.summer}
+
+**🎄 Holidays:**
+${this.knowledgeBase.services.hours.holidays}
+
+**📞 Main Phone:** ${this.knowledgeBase.staff.main_contact.phone}
+
+*Need more specific information about a particular day or service?*`;
+            this.currentContext = 'hours';
+
+        // Dean Information
+        } else if (lowerMessage.includes('dean') || lowerMessage.includes('michael meth')) {
+            response = `👨‍💼 **Library Dean Information:**
+
+**Name:** ${this.knowledgeBase.staff.dean.name}
+**Title:** ${this.knowledgeBase.staff.dean.title}
+**Email:** ${this.knowledgeBase.staff.dean.email}
+**Phone:** ${this.knowledgeBase.staff.dean.phone}
+**Office:** ${this.knowledgeBase.staff.dean.office}
+
+**About:** ${this.knowledgeBase.staff.dean.bio}
+
+*Would you like to know about other library staff or departments?*`;
+            this.currentContext = 'staff';
+
+        // Study Rooms
+        } else if (lowerMessage.includes('study room') || lowerMessage.includes('group study') || lowerMessage.includes('book room')) {
+            response = `🏛️ **Study Spaces at King Library:**
+
+**📚 Group Study Rooms:**
+${this.knowledgeBase.services.study_spaces.group_study_rooms}
+
+**👤 Individual Study:**
+${this.knowledgeBase.services.study_spaces.individual_study}
+
+**🤫 Silent Study:**
+${this.knowledgeBase.services.study_spaces.silent_study}
+
+**💬 Collaborative Study:**
+${this.knowledgeBase.services.study_spaces.collaborative_study}
+
+**💻 Computer Lab:**
+${this.knowledgeBase.services.study_spaces.computer_lab}
+
+*Want to know how to book a room or need details about a specific floor?*`;
+            this.currentContext = 'study_rooms';
+
+        // Follow-up: How to book rooms
+        } else if ((lowerMessage.includes('book') || lowerMessage.includes('reserve') || lowerMessage.includes('how')) && this.currentContext === 'study_rooms') {
+            contextIndicator = '💬 Following up on study rooms';
+            response = `📅 **How to Book Study Rooms:**
+
+**🌐 Online Booking:**
+${this.knowledgeBase.forms.room_booking.process}
+
+**⏰ Advance Booking:**
+${this.knowledgeBase.forms.room_booking.advance_booking}
+
+**⏱️ Duration:**
+${this.knowledgeBase.forms.room_booking.duration}
+
+**📍 Location:** Access the booking system through the library website or ask at the circulation desk
+
+*Need help with the booking system or have questions about room availability?*`;
+
+        // Contact Information
+        } else if (lowerMessage.includes('contact') || lowerMessage.includes('phone') || lowerMessage.includes('call') || lowerMessage.includes('email')) {
+            response = `📞 **SJSU Library Contact Information:**
+
+**📚 Main Library Desk:**
+Phone: ${this.knowledgeBase.staff.main_contact.phone}
+Email: ${this.knowledgeBase.staff.main_contact.email}
+Hours: ${this.knowledgeBase.staff.main_contact.hours}
+
+**🔍 Research Help Desk:**
+Phone: ${this.knowledgeBase.staff.reference.phone}
+Email: ${this.knowledgeBase.staff.reference.email}
+Location: ${this.knowledgeBase.staff.reference.location}
+
+**📜 Special Collections:**
+Phone: ${this.knowledgeBase.staff.special_collections.phone}
+Email: ${this.knowledgeBase.staff.special_collections.email}
+Location: ${this.knowledgeBase.staff.special_collections.location}
+
+**👨‍💼 Dean Michael Meth:**
+Email: ${this.knowledgeBase.staff.dean.email}
+
+*Need a specific department or have questions about services?*`;
+            this.currentContext = 'contact';
+
+        // Printing
+        } else if (lowerMessage.includes('print') || lowerMessage.includes('papercut')) {
+            response = `🖨️ **Printing at SJSU Library:**
+
+${this.knowledgeBase.faq.printing.answer}
+
+**💰 Costs:**
+• Black & White: $0.10 per page
+• Color: $0.50 per page
+
+**💳 Payment:**
+• Add money at PaperCut stations
+• Online account management
+• Use SJSU ID card
+
+**📍 Printer Locations:**
+• Ground floor computer lab
+• All study floors
+• Reference area (2nd floor)
+
+*Need help adding money to your account or finding a specific printer?*`;
+            this.currentContext = 'printing';
+
+        // Research Help
+        } else if (lowerMessage.includes('research') || lowerMessage.includes('help with') || lowerMessage.includes('citation')) {
+            response = `📚 **Research Help Services:**
+
+**👥 Research Consultations:**
+${this.knowledgeBase.services.research_help.research_consultations}
+
+**📖 Subject Librarians:**
+${this.knowledgeBase.services.research_help.subject_librarians}
+
+**📝 Citation Help:**
+${this.knowledgeBase.services.research_help.citation_help}
+
+**💾 Database Training:**
+${this.knowledgeBase.services.research_help.database_training}
+
+**📞 Contact Research Help:**
+Phone: ${this.knowledgeBase.staff.reference.phone}
+Email: ${this.knowledgeBase.staff.reference.email}
+Location: ${this.knowledgeBase.staff.reference.location}
+
+*Need help with a specific subject area or type of research?*`;
+            this.currentContext = 'research';
+
+        // ULB Committee
+        } else if (lowerMessage.includes('ulb') || lowerMessage.includes('university library board')) {
+            response = `🤝 **University Library Board (ULB):**
+
+**📋 Description:**
+${this.knowledgeBase.committees.ULB.description}
+
+**👥 Members:**
+${this.knowledgeBase.committees.ULB.members}
+
+**📅 Meetings:**
+${this.knowledgeBase.committees.ULB.meetings}
+
+**📧 Contact:**
+${this.knowledgeBase.committees.ULB.contact}
+
+*Want to know about other committees like ULLT or how to get involved?*`;
+            this.currentContext = 'committees';
+
+        // ULLT Committee
+        } else if (lowerMessage.includes('ullt') || lowerMessage.includes('leadership team')) {
+            response = `👥 **University Library Leadership Team (ULLT):**
+
+**📋 Description:**
+${this.knowledgeBase.committees.ULLT.description}
+
+**👥 Members:**
+${this.knowledgeBase.committees.ULLT.members}
+
+**📅 Meetings:**
+${this.knowledgeBase.committees.ULLT.meetings}
+
+**ℹ️ Note:**
+${this.knowledgeBase.committees.ULLT.contact}
+
+*Interested in other library committees or governance structure?*`;
+            this.currentContext = 'committees';
+
+        // Follow-up on committees
+        } else if ((lowerMessage.includes('other') || lowerMessage.includes('more') || lowerMessage.includes('committees')) && this.currentContext === 'committees') {
+            contextIndicator = '💬 Following up on committees';
+            response = `🤝 **Other Library Committees:**
+
+**🏛️ Faculty Senate Library Committee:**
+${this.knowledgeBase.committees.faculty_senate_library.description}
+Role: ${this.knowledgeBase.committees.faculty_senate_library.role}
+
+**🎯 Getting Involved:**
+• Faculty can join through college representatives
+• Students can apply for ULB positions
+• Contact Dean Michael Meth for more information
+
+**📧 Questions?** Email: ${this.knowledgeBase.staff.dean.email}
+
+*Want to know about specific committee responsibilities or meeting schedules?*`;
+
+        // WiFi
+        } else if (lowerMessage.includes('wifi') || lowerMessage.includes('internet') || lowerMessage.includes('network')) {
+            response = `📶 **WiFi Information:**
+
+${this.knowledgeBase.faq.wifi.answer}
+
+**🔐 Networks:**
+• **SJSU_Premier**: Main network for students/staff
+• **SJSU_Guest**: Visitor network
+
+**🆔 Login:** Use your SJSU username and password
+
+**❓ Connection Issues?**
+• Check your SJSU account status
+• Contact IT Help Desk: 408-924-1530
+• Visit the computer lab for assistance
+
+*Having trouble connecting or need guest access information?*`;
+            this.currentContext = 'wifi';
+
+        // Food and Drinks
+        } else if (lowerMessage.includes('food') || lowerMessage.includes('drink') || lowerMessage.includes('eat') || lowerMessage.includes('coffee')) {
+            response = `🍽️ **Food & Drink Policy:**
+
+${this.knowledgeBase.faq.food_drink.answer}
+
+**✅ Allowed Areas for Food:**
+• Ground floor lobby
+• 2nd floor collaborative space
+• Outdoor areas
+
+**🥤 Drinks:** 
+• Covered drinks allowed throughout
+• Water bottles welcome everywhere
+• Spill-proof containers recommended
+
+**☕ Nearby Options:**
+• Campus dining locations
+• Student Union food court
+• Local cafes on San Fernando Street
+
+*Looking for specific dining recommendations or have questions about the policy?*`;
+            this.currentContext = 'food';
+
+        // Forms
+        } else if (lowerMessage.includes('form') || lowerMessage.includes('application') || lowerMessage.includes('request')) {
+            response = `📋 **Library Forms & Applications:**
+
+**📚 Library Card:**
+${this.knowledgeBase.forms.library_card.process}
+Cost: ${this.knowledgeBase.forms.library_card.cost}
+
+**🏛️ Room Booking:**
+${this.knowledgeBase.forms.room_booking.process}
+
+**📖 Interlibrary Loan:**
+${this.knowledgeBase.forms.interlibrary_loan.process}
+Cost: ${this.knowledgeBase.forms.interlibrary_loan.cost}
+
+**📚 Purchase Request:**
+${this.knowledgeBase.forms.purchase_request.process}
+
+*Need help with a specific form or process?*`;
+            this.currentContext = 'forms';
+
+        // Laptop checkout
+        } else if (lowerMessage.includes('laptop') || lowerMessage.includes('borrow') || lowerMessage.includes('checkout')) {
+            response = `💻 **Laptop Checkout Service:**
+
+${this.knowledgeBase.faq.laptop_checkout.answer}
+
+**📋 Requirements:**
+• Valid SJSU student ID
+• Good standing with library (no overdue items)
+
+**⏰ Checkout Period:** 4 hours maximum
+**🔄 Renewals:** Based on availability
+**📍 Location:** Circulation desk, ground floor
+
+**💡 Tip:** Popular during finals - come early for best availability!
+
+*Questions about availability or checkout policies?*`;
+            this.currentContext = 'laptops';
+
+        // Floor information
+        } else if (lowerMessage.includes('floor') || lowerMessage.includes('level') || lowerMessage.includes('where is')) {
+            response = `🏢 **King Library Floor Guide:**
+
+**Ground Floor:** ${this.knowledgeBase.services.locations.floors.ground}
+**1st Floor:** ${this.knowledgeBase.services.locations.floors.first}
+**2nd Floor:** ${this.knowledgeBase.services.locations.floors.second}
+**3rd Floor:** ${this.knowledgeBase.services.locations.floors.third}
+**4th Floor:** ${this.knowledgeBase.services.locations.floors.fourth}
+**5th Floor:** ${this.knowledgeBase.services.locations.floors.fifth}
+**6th Floor:** ${this.knowledgeBase.services.locations.floors.sixth}
+**7th Floor:** ${this.knowledgeBase.services.locations.floors.seventh}
+**8th Floor:** ${this.knowledgeBase.services.locations.floors.eighth}
+
+*Looking for something specific or need directions to a particular service?*`;
+            this.currentContext = 'floors';
+
+        // Follow-up responses based on context
+        } else if (isFollowUp && this.currentContext) {
+            contextIndicator = `💬 Following up on ${this.currentContext}`;
+            response = this.generateFollowUpResponse(lowerMessage, this.currentContext);
+        
+        // Default response
+        } else {
+            response = `🤔 **I'm here to help with SJSU Library questions!**
+
+**Popular topics I can help with:**
+• 📅 **Library hours** and locations
+• 📞 **Staff contacts** (Dean Michael Meth, departments)
+• 🏛️ **Study spaces** and room bookings
+• 📚 **Research help** and services
+• 🖨️ **Printing** and computer access
+• 📋 **Forms** and procedures
+• 🤝 **Committees** (ULB, ULLT)
+• 📶 **WiFi** and technology help
+
+**Try asking:**
+• "What are the library hours?"
+• "How do I contact Dean Michael Meth?"
+• "Tell me about study rooms"
+• "Who is in the ULB committee?"
+• "How do I print?"
+
+*I also remember our conversation, so feel free to ask follow-up questions!* 😊`;
+        }
+
+        // Add context indicator if it's a follow-up
+        if (contextIndicator) {
+            this.addContextIndicator(contextIndicator);
+        }
+
+        this.addMessage('bot', response);
+        this.conversationHistory.push({type: 'bot', message: response, timestamp: Date.now()});
+    }
+
+    generateFollowUpResponse(message, context) {
+        switch (context) {
+            case 'hours':
+                if (message.includes('weekend') || message.includes('saturday') || message.includes('sunday')) {
+                    return `📅 **Weekend Hours:**\n\n**Saturday:** 10am-6pm\n**Sunday:** 12pm-12am\n\n*Weekend hours may vary during breaks and summer - always check the library website for current hours!*`;
+                } else if (message.includes('holiday') || message.includes('break')) {
+                    return `🎄 **Holiday & Break Hours:**\n\nThe library has reduced hours during:\n• Winter break\n• Spring break\n• Summer sessions\n• University holidays\n\n**Always check:** library.sjsu.edu for current hours\n**Call:** ${this.knowledgeBase.staff.main_contact.phone} for confirmation`;
+                }
+                break;
+            
+            case 'study_rooms':
+                if (message.includes('quiet') || message.includes('silent')) {
+                    return `🤫 **Silent Study Areas:**\n\n**Floor 4:** Absolute quiet zone with individual desks\n**Floor 7:** Silent study with individual carrels\n**Floor 6:** Graduate study area (quieter atmosphere)\n\n*These floors are designated for individual, silent study only.*`;
+                } else if (message.includes('group') || message.includes('loud')) {
+                    return `💬 **Group Study Options:**\n\n**Floor 2:** Collaborative study - discussion allowed\n**Group Study Rooms:** Floors 2-3, bookable online\n**Ground Floor Lobby:** Casual group meeting space\n\n*Perfect for group projects and discussions!*`;
+                }
+                break;
+
+            case 'contact':
+                if (message.includes('emergency') || message.includes('after hours')) {
+                    return `🚨 **After Hours & Emergency:**\n\n**Campus Police:** 408-924-2222\n**UPD Emergency:** 911\n**Building Issues:** Contact campus police\n\n**Library Emergency:** Call main number and follow prompts for urgent library issues.`;
+                }
+                break;
+
+            default:
+                return `I'd be happy to provide more specific information! What exactly would you like to know more about?`;
+        }
+        
+        return `I'd be happy to help with more details! What specific aspect would you like to know about?`;
+    }
+
+    addContextIndicator(text) {
+        const messagesContainer = document.getElementById('sjsu-conv-chat-messages');
+        const indicatorDiv = document.createElement('div');
+        indicatorDiv.className = 'sjsu-conv-context-indicator';
+        indicatorDiv.textContent = text;
+        
+        messagesContainer.appendChild(indicatorDiv);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    addMessage(sender, text) {
+        const messagesContainer = document.getElementById('sjsu-conv-chat-messages');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `sjsu-conv-message ${sender}`;
+        messageDiv.innerHTML = text.replace(/\n/g, '<br>');
+        
+        messagesContainer.appendChild(messageDiv);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    showTyping() {
+        this.isTyping = true;
+        const messagesContainer = document.getElementById('sjsu-conv-chat-messages');
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'sjsu-conv-typing';
+        typingDiv.id = 'sjsu-conv-typing-indicator';
+        typingDiv.innerHTML = `
+            <div class="sjsu-conv-typing-dot"></div>
+            <div class="sjsu-conv-typing-dot"></div>
+            <div class="sjsu-conv-typing-dot"></div>
+        `;
+        
+        messagesContainer.appendChild(typingDiv);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    hideTyping() {
+        this.isTyping = false;
+        const typingIndicator = document.getElementById('sjsu-conv-typing-indicator');
+        if (typingIndicator) {
+            typingIndicator.remove();
+        }
+    }
+}
+
+// Initialize the conversational chatbot
+const sjsuConvBot = new SJSUConversationalChatbot();
+</script>
