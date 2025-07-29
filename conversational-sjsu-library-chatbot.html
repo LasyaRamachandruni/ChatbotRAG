@@ -270,6 +270,9 @@
 </style>
 
 <script>
+// Global variable declaration for better accessibility
+let sjsuConvBot;
+
 class SJSUConversationalChatbot {
     constructor() {
         this.isOpen = false;
@@ -423,13 +426,21 @@ class SJSUConversationalChatbot {
     }
 
     init() {
-        this.createWidget();
-        this.bindEvents();
-        this.addWelcomeMessage();
+        try {
+            this.createWidget();
+            this.bindEvents();
+            this.addWelcomeMessage();
+        } catch (error) {
+            console.error('Error initializing chatbot:', error);
+        }
     }
 
     createWidget() {
         const widget = document.getElementById('sjsu-conversational-chatbot-widget');
+        if (!widget) {
+            console.error('Widget container not found');
+            return;
+        }
         
         widget.innerHTML = `
             <div class="sjsu-conv-chatbot-button" id="sjsu-conv-chatbot-button">
@@ -467,33 +478,50 @@ class SJSUConversationalChatbot {
     }
 
     bindEvents() {
-        const button = document.getElementById('sjsu-conv-chatbot-button');
-        const closeBtn = document.getElementById('sjsu-conv-close-btn');
-        const sendBtn = document.getElementById('sjsu-conv-send-btn');
-        const input = document.getElementById('sjsu-conv-input');
+        try {
+            const button = document.getElementById('sjsu-conv-chatbot-button');
+            const closeBtn = document.getElementById('sjsu-conv-close-btn');
+            const sendBtn = document.getElementById('sjsu-conv-send-btn');
+            const input = document.getElementById('sjsu-conv-input');
 
-        button.addEventListener('click', () => this.toggleChat());
-        closeBtn.addEventListener('click', () => this.closeChat());
-        sendBtn.addEventListener('click', () => this.sendMessage());
-        
-        input.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.sendMessage();
-        });
+            if (button) {
+                button.addEventListener('click', () => this.toggleChat());
+            }
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => this.closeChat());
+            }
+            if (sendBtn) {
+                sendBtn.addEventListener('click', () => this.sendMessage());
+            }
+            if (input) {
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.sendMessage();
+                });
+            }
+        } catch (error) {
+            console.error('Error binding events:', error);
+        }
     }
 
     toggleChat() {
         this.isOpen = !this.isOpen;
         const container = document.getElementById('sjsu-conv-chat-container');
-        container.classList.toggle('open', this.isOpen);
-        
-        if (this.isOpen) {
-            document.getElementById('sjsu-conv-input').focus();
+        if (container) {
+            container.classList.toggle('open', this.isOpen);
+            
+            if (this.isOpen) {
+                const input = document.getElementById('sjsu-conv-input');
+                if (input) input.focus();
+            }
         }
     }
 
     closeChat() {
         this.isOpen = false;
-        document.getElementById('sjsu-conv-chat-container').classList.remove('open');
+        const container = document.getElementById('sjsu-conv-chat-container');
+        if (container) {
+            container.classList.remove('open');
+        }
     }
 
     addWelcomeMessage() {
@@ -521,6 +549,8 @@ What can I help you with today? 😊`);
 
     sendMessage() {
         const input = document.getElementById('sjsu-conv-input');
+        if (!input) return;
+        
         const message = input.value.trim();
         
         if (!message || this.isTyping) return;
@@ -558,23 +588,28 @@ What can I help you with today? 😊`);
     }
 
     generateConversationalResponse(message) {
-        const lowerMessage = message.toLowerCase();
-        let response = '';
-        let contextIndicator = '';
+        try {
+            const lowerMessage = message.toLowerCase();
+            let response = '';
+            let contextIndicator = '';
 
-        // Check for follow-up context
-        const recentBotMessages = this.conversationHistory
-            .filter(msg => msg.type === 'bot')
-            .slice(-2)
-            .map(msg => msg.message.toLowerCase());
+            // Check for follow-up context
+            const recentBotMessages = this.conversationHistory
+                .filter(msg => msg.type === 'bot')
+                .slice(-2)
+                .map(msg => msg.message.toLowerCase());
 
-        // Detect follow-up questions
-        const followUpIndicators = ['how', 'what about', 'tell me more', 'where', 'when', 'who', 'can you', 'more info', 'details', 'explain'];
-        const isFollowUp = followUpIndicators.some(indicator => lowerMessage.includes(indicator)) && this.conversationHistory.length > 0;
+            // Enhanced follow-up detection
+            const followUpIndicators = [
+                'how', 'what about', 'tell me more', 'where', 'when', 'who', 'can you', 
+                'more info', 'details', 'explain', 'what else', 'and', 'also', 'too',
+                'what about', 'how about', 'is there', 'are there', 'do you have'
+            ];
+            const isFollowUp = followUpIndicators.some(indicator => lowerMessage.includes(indicator)) && this.conversationHistory.length > 0;
 
-        // Library Hours
-        if (lowerMessage.includes('hours') || lowerMessage.includes('open') || lowerMessage.includes('close')) {
-            response = `📅 **SJSU Library Hours:**
+            // Library Hours
+            if (lowerMessage.includes('hours') || lowerMessage.includes('open') || lowerMessage.includes('close') || lowerMessage.includes('time')) {
+                response = `📅 **SJSU Library Hours:**
 
 **📚 Regular Hours:**
 ${this.knowledgeBase.services.hours.regular}
@@ -591,11 +626,11 @@ ${this.knowledgeBase.services.hours.holidays}
 **📞 Main Phone:** ${this.knowledgeBase.staff.main_contact.phone}
 
 *Need more specific information about a particular day or service?*`;
-            this.currentContext = 'hours';
+                this.currentContext = 'hours';
 
-        // Dean Information
-        } else if (lowerMessage.includes('dean') || lowerMessage.includes('michael meth')) {
-            response = `👨‍💼 **Library Dean Information:**
+            // Dean Information
+            } else if (lowerMessage.includes('dean') || lowerMessage.includes('michael meth') || lowerMessage.includes('library dean')) {
+                response = `👨‍💼 **Library Dean Information:**
 
 **Name:** ${this.knowledgeBase.staff.dean.name}
 **Title:** ${this.knowledgeBase.staff.dean.title}
@@ -606,11 +641,11 @@ ${this.knowledgeBase.services.hours.holidays}
 **About:** ${this.knowledgeBase.staff.dean.bio}
 
 *Would you like to know about other library staff or departments?*`;
-            this.currentContext = 'staff';
+                this.currentContext = 'staff';
 
-        // Study Rooms
-        } else if (lowerMessage.includes('study room') || lowerMessage.includes('group study') || lowerMessage.includes('book room')) {
-            response = `🏛️ **Study Spaces at King Library:**
+            // Study Rooms
+            } else if (lowerMessage.includes('study room') || lowerMessage.includes('group study') || lowerMessage.includes('book room') || lowerMessage.includes('reserve room')) {
+                response = `🏛️ **Study Spaces at King Library:**
 
 **📚 Group Study Rooms:**
 ${this.knowledgeBase.services.study_spaces.group_study_rooms}
@@ -628,12 +663,12 @@ ${this.knowledgeBase.services.study_spaces.collaborative_study}
 ${this.knowledgeBase.services.study_spaces.computer_lab}
 
 *Want to know how to book a room or need details about a specific floor?*`;
-            this.currentContext = 'study_rooms';
+                this.currentContext = 'study_rooms';
 
-        // Follow-up: How to book rooms
-        } else if ((lowerMessage.includes('book') || lowerMessage.includes('reserve') || lowerMessage.includes('how')) && this.currentContext === 'study_rooms') {
-            contextIndicator = '💬 Following up on study rooms';
-            response = `📅 **How to Book Study Rooms:**
+            // Follow-up: How to book rooms
+            } else if ((lowerMessage.includes('book') || lowerMessage.includes('reserve') || lowerMessage.includes('how') || lowerMessage.includes('process')) && this.currentContext === 'study_rooms') {
+                contextIndicator = '💬 Following up on study rooms';
+                response = `📅 **How to Book Study Rooms:**
 
 **🌐 Online Booking:**
 ${this.knowledgeBase.forms.room_booking.process}
@@ -648,9 +683,9 @@ ${this.knowledgeBase.forms.room_booking.duration}
 
 *Need help with the booking system or have questions about room availability?*`;
 
-        // Contact Information
-        } else if (lowerMessage.includes('contact') || lowerMessage.includes('phone') || lowerMessage.includes('call') || lowerMessage.includes('email')) {
-            response = `📞 **SJSU Library Contact Information:**
+            // Contact Information
+            } else if (lowerMessage.includes('contact') || lowerMessage.includes('phone') || lowerMessage.includes('call') || lowerMessage.includes('email') || lowerMessage.includes('reach')) {
+                response = `📞 **SJSU Library Contact Information:**
 
 **📚 Main Library Desk:**
 Phone: ${this.knowledgeBase.staff.main_contact.phone}
@@ -671,11 +706,11 @@ Location: ${this.knowledgeBase.staff.special_collections.location}
 Email: ${this.knowledgeBase.staff.dean.email}
 
 *Need a specific department or have questions about services?*`;
-            this.currentContext = 'contact';
+                this.currentContext = 'contact';
 
-        // Printing
-        } else if (lowerMessage.includes('print') || lowerMessage.includes('papercut')) {
-            response = `🖨️ **Printing at SJSU Library:**
+            // Printing
+            } else if (lowerMessage.includes('print') || lowerMessage.includes('papercut') || lowerMessage.includes('printer')) {
+                response = `🖨️ **Printing at SJSU Library:**
 
 ${this.knowledgeBase.faq.printing.answer}
 
@@ -694,11 +729,11 @@ ${this.knowledgeBase.faq.printing.answer}
 • Reference area (2nd floor)
 
 *Need help adding money to your account or finding a specific printer?*`;
-            this.currentContext = 'printing';
+                this.currentContext = 'printing';
 
-        // Research Help
-        } else if (lowerMessage.includes('research') || lowerMessage.includes('help with') || lowerMessage.includes('citation')) {
-            response = `📚 **Research Help Services:**
+            // Research Help
+            } else if (lowerMessage.includes('research') || lowerMessage.includes('help with') || lowerMessage.includes('citation') || lowerMessage.includes('librarian')) {
+                response = `📚 **Research Help Services:**
 
 **👥 Research Consultations:**
 ${this.knowledgeBase.services.research_help.research_consultations}
@@ -718,11 +753,11 @@ Email: ${this.knowledgeBase.staff.reference.email}
 Location: ${this.knowledgeBase.staff.reference.location}
 
 *Need help with a specific subject area or type of research?*`;
-            this.currentContext = 'research';
+                this.currentContext = 'research';
 
-        // ULB Committee
-        } else if (lowerMessage.includes('ulb') || lowerMessage.includes('university library board')) {
-            response = `🤝 **University Library Board (ULB):**
+            // ULB Committee
+            } else if (lowerMessage.includes('ulb') || lowerMessage.includes('university library board')) {
+                response = `🤝 **University Library Board (ULB):**
 
 **📋 Description:**
 ${this.knowledgeBase.committees.ULB.description}
@@ -737,11 +772,11 @@ ${this.knowledgeBase.committees.ULB.meetings}
 ${this.knowledgeBase.committees.ULB.contact}
 
 *Want to know about other committees like ULLT or how to get involved?*`;
-            this.currentContext = 'committees';
+                this.currentContext = 'committees';
 
-        // ULLT Committee
-        } else if (lowerMessage.includes('ullt') || lowerMessage.includes('leadership team')) {
-            response = `👥 **University Library Leadership Team (ULLT):**
+            // ULLT Committee
+            } else if (lowerMessage.includes('ullt') || lowerMessage.includes('leadership team')) {
+                response = `👥 **University Library Leadership Team (ULLT):**
 
 **📋 Description:**
 ${this.knowledgeBase.committees.ULLT.description}
@@ -756,12 +791,12 @@ ${this.knowledgeBase.committees.ULLT.meetings}
 ${this.knowledgeBase.committees.ULLT.contact}
 
 *Interested in other library committees or governance structure?*`;
-            this.currentContext = 'committees';
+                this.currentContext = 'committees';
 
-        // Follow-up on committees
-        } else if ((lowerMessage.includes('other') || lowerMessage.includes('more') || lowerMessage.includes('committees')) && this.currentContext === 'committees') {
-            contextIndicator = '💬 Following up on committees';
-            response = `🤝 **Other Library Committees:**
+            // Follow-up on committees
+            } else if ((lowerMessage.includes('other') || lowerMessage.includes('more') || lowerMessage.includes('committees')) && this.currentContext === 'committees') {
+                contextIndicator = '💬 Following up on committees';
+                response = `🤝 **Other Library Committees:**
 
 **🏛️ Faculty Senate Library Committee:**
 ${this.knowledgeBase.committees.faculty_senate_library.description}
@@ -776,9 +811,9 @@ Role: ${this.knowledgeBase.committees.faculty_senate_library.role}
 
 *Want to know about specific committee responsibilities or meeting schedules?*`;
 
-        // WiFi
-        } else if (lowerMessage.includes('wifi') || lowerMessage.includes('internet') || lowerMessage.includes('network')) {
-            response = `📶 **WiFi Information:**
+            // WiFi
+            } else if (lowerMessage.includes('wifi') || lowerMessage.includes('internet') || lowerMessage.includes('network') || lowerMessage.includes('wireless')) {
+                response = `📶 **WiFi Information:**
 
 ${this.knowledgeBase.faq.wifi.answer}
 
@@ -794,11 +829,11 @@ ${this.knowledgeBase.faq.wifi.answer}
 • Visit the computer lab for assistance
 
 *Having trouble connecting or need guest access information?*`;
-            this.currentContext = 'wifi';
+                this.currentContext = 'wifi';
 
-        // Food and Drinks
-        } else if (lowerMessage.includes('food') || lowerMessage.includes('drink') || lowerMessage.includes('eat') || lowerMessage.includes('coffee')) {
-            response = `🍽️ **Food & Drink Policy:**
+            // Food and Drinks
+            } else if (lowerMessage.includes('food') || lowerMessage.includes('drink') || lowerMessage.includes('eat') || lowerMessage.includes('coffee') || lowerMessage.includes('snack')) {
+                response = `🍽️ **Food & Drink Policy:**
 
 ${this.knowledgeBase.faq.food_drink.answer}
 
@@ -818,11 +853,11 @@ ${this.knowledgeBase.faq.food_drink.answer}
 • Local cafes on San Fernando Street
 
 *Looking for specific dining recommendations or have questions about the policy?*`;
-            this.currentContext = 'food';
+                this.currentContext = 'food';
 
-        // Forms
-        } else if (lowerMessage.includes('form') || lowerMessage.includes('application') || lowerMessage.includes('request')) {
-            response = `📋 **Library Forms & Applications:**
+            // Forms
+            } else if (lowerMessage.includes('form') || lowerMessage.includes('application') || lowerMessage.includes('request') || lowerMessage.includes('apply')) {
+                response = `📋 **Library Forms & Applications:**
 
 **📚 Library Card:**
 ${this.knowledgeBase.forms.library_card.process}
@@ -839,11 +874,11 @@ Cost: ${this.knowledgeBase.forms.interlibrary_loan.cost}
 ${this.knowledgeBase.forms.purchase_request.process}
 
 *Need help with a specific form or process?*`;
-            this.currentContext = 'forms';
+                this.currentContext = 'forms';
 
-        // Laptop checkout
-        } else if (lowerMessage.includes('laptop') || lowerMessage.includes('borrow') || lowerMessage.includes('checkout')) {
-            response = `💻 **Laptop Checkout Service:**
+            // Laptop checkout
+            } else if (lowerMessage.includes('laptop') || lowerMessage.includes('borrow') || lowerMessage.includes('checkout') || lowerMessage.includes('computer')) {
+                response = `💻 **Laptop Checkout Service:**
 
 ${this.knowledgeBase.faq.laptop_checkout.answer}
 
@@ -858,11 +893,11 @@ ${this.knowledgeBase.faq.laptop_checkout.answer}
 **💡 Tip:** Popular during finals - come early for best availability!
 
 *Questions about availability or checkout policies?*`;
-            this.currentContext = 'laptops';
+                this.currentContext = 'laptops';
 
-        // Floor information
-        } else if (lowerMessage.includes('floor') || lowerMessage.includes('level') || lowerMessage.includes('where is')) {
-            response = `🏢 **King Library Floor Guide:**
+            // Floor information
+            } else if (lowerMessage.includes('floor') || lowerMessage.includes('level') || lowerMessage.includes('where is') || lowerMessage.includes('location')) {
+                response = `🏢 **King Library Floor Guide:**
 
 **Ground Floor:** ${this.knowledgeBase.services.locations.floors.ground}
 **1st Floor:** ${this.knowledgeBase.services.locations.floors.first}
@@ -875,16 +910,16 @@ ${this.knowledgeBase.faq.laptop_checkout.answer}
 **8th Floor:** ${this.knowledgeBase.services.locations.floors.eighth}
 
 *Looking for something specific or need directions to a particular service?*`;
-            this.currentContext = 'floors';
+                this.currentContext = 'floors';
 
-        // Follow-up responses based on context
-        } else if (isFollowUp && this.currentContext) {
-            contextIndicator = `💬 Following up on ${this.currentContext}`;
-            response = this.generateFollowUpResponse(lowerMessage, this.currentContext);
-        
-        // Default response
-        } else {
-            response = `🤔 **I'm here to help with SJSU Library questions!**
+            // Follow-up responses based on context
+            } else if (isFollowUp && this.currentContext) {
+                contextIndicator = `💬 Following up on ${this.currentContext}`;
+                response = this.generateFollowUpResponse(lowerMessage, this.currentContext);
+            
+            // Default response with better suggestions
+            } else {
+                response = `🤔 **I'm here to help with SJSU Library questions!**
 
 **Popular topics I can help with:**
 • 📅 **Library hours** and locations
@@ -902,17 +937,23 @@ ${this.knowledgeBase.faq.laptop_checkout.answer}
 • "Tell me about study rooms"
 • "Who is in the ULB committee?"
 • "How do I print?"
+• "What's the WiFi password?"
 
 *I also remember our conversation, so feel free to ask follow-up questions!* 😊`;
-        }
+            }
 
-        // Add context indicator if it's a follow-up
-        if (contextIndicator) {
-            this.addContextIndicator(contextIndicator);
-        }
+            // Add context indicator if it's a follow-up
+            if (contextIndicator) {
+                this.addContextIndicator(contextIndicator);
+            }
 
-        this.addMessage('bot', response);
-        this.conversationHistory.push({type: 'bot', message: response, timestamp: Date.now()});
+            this.addMessage('bot', response);
+            this.conversationHistory.push({type: 'bot', message: response, timestamp: Date.now()});
+            
+        } catch (error) {
+            console.error('Error generating response:', error);
+            this.addMessage('bot', 'Sorry, I encountered an error. Please try asking your question again or contact the library directly.');
+        }
     }
 
     generateFollowUpResponse(message, context) {
@@ -922,6 +963,8 @@ ${this.knowledgeBase.faq.laptop_checkout.answer}
                     return `📅 **Weekend Hours:**\n\n**Saturday:** 10am-6pm\n**Sunday:** 12pm-12am\n\n*Weekend hours may vary during breaks and summer - always check the library website for current hours!*`;
                 } else if (message.includes('holiday') || message.includes('break')) {
                     return `🎄 **Holiday & Break Hours:**\n\nThe library has reduced hours during:\n• Winter break\n• Spring break\n• Summer sessions\n• University holidays\n\n**Always check:** library.sjsu.edu for current hours\n**Call:** ${this.knowledgeBase.staff.main_contact.phone} for confirmation`;
+                } else if (message.includes('today') || message.includes('now')) {
+                    return `📅 **Today's Hours:**\n\nPlease check the library website for current daily hours, or call ${this.knowledgeBase.staff.main_contact.phone} for immediate assistance.`;
                 }
                 break;
             
@@ -930,12 +973,24 @@ ${this.knowledgeBase.faq.laptop_checkout.answer}
                     return `🤫 **Silent Study Areas:**\n\n**Floor 4:** Absolute quiet zone with individual desks\n**Floor 7:** Silent study with individual carrels\n**Floor 6:** Graduate study area (quieter atmosphere)\n\n*These floors are designated for individual, silent study only.*`;
                 } else if (message.includes('group') || message.includes('loud')) {
                     return `💬 **Group Study Options:**\n\n**Floor 2:** Collaborative study - discussion allowed\n**Group Study Rooms:** Floors 2-3, bookable online\n**Ground Floor Lobby:** Casual group meeting space\n\n*Perfect for group projects and discussions!*`;
+                } else if (message.includes('availability') || message.includes('available')) {
+                    return `📊 **Room Availability:**\n\n• Check real-time availability on the library website\n• Popular times: 10am-2pm, 6pm-10pm\n• Best availability: Early morning, late evening\n• Weekend availability varies\n\n*Need help with the booking system?*`;
                 }
                 break;
 
             case 'contact':
                 if (message.includes('emergency') || message.includes('after hours')) {
                     return `🚨 **After Hours & Emergency:**\n\n**Campus Police:** 408-924-2222\n**UPD Emergency:** 911\n**Building Issues:** Contact campus police\n\n**Library Emergency:** Call main number and follow prompts for urgent library issues.`;
+                } else if (message.includes('email') || message.includes('online')) {
+                    return `📧 **Email Contacts:**\n\n**General:** circulation@sjsu.edu\n**Research Help:** ref-desk@sjsu.edu\n**Special Collections:** special.collections@sjsu.edu\n**Dean:** michael.meth@sjsu.edu\n\n*Response time: 1-2 business days*`;
+                }
+                break;
+
+            case 'printing':
+                if (message.includes('money') || message.includes('payment') || message.includes('add')) {
+                    return `💰 **Adding Money to PaperCut:**\n\n**At Library:**\n• PaperCut stations near printers\n• Circulation desk assistance\n\n**Online:**\n• PaperCut web interface\n• Use SJSU login\n• Credit/debit card accepted\n\n**Minimum:** $1.00\n**Maximum:** $50.00`;
+                } else if (message.includes('cost') || message.includes('price') || message.includes('fee')) {
+                    return `💵 **Printing Costs:**\n\n**Black & White:**\n• $0.10 per page\n• Double-sided: $0.15\n\n**Color:**\n• $0.50 per page\n• Double-sided: $0.75\n\n**Large Format:**\n• Available at special request\n• Pricing varies`;
                 }
                 break;
 
@@ -948,6 +1003,8 @@ ${this.knowledgeBase.faq.laptop_checkout.answer}
 
     addContextIndicator(text) {
         const messagesContainer = document.getElementById('sjsu-conv-chat-messages');
+        if (!messagesContainer) return;
+        
         const indicatorDiv = document.createElement('div');
         indicatorDiv.className = 'sjsu-conv-context-indicator';
         indicatorDiv.textContent = text;
@@ -958,6 +1015,8 @@ ${this.knowledgeBase.faq.laptop_checkout.answer}
 
     addMessage(sender, text) {
         const messagesContainer = document.getElementById('sjsu-conv-chat-messages');
+        if (!messagesContainer) return;
+        
         const messageDiv = document.createElement('div');
         messageDiv.className = `sjsu-conv-message ${sender}`;
         messageDiv.innerHTML = text.replace(/\n/g, '<br>');
@@ -969,6 +1028,8 @@ ${this.knowledgeBase.faq.laptop_checkout.answer}
     showTyping() {
         this.isTyping = true;
         const messagesContainer = document.getElementById('sjsu-conv-chat-messages');
+        if (!messagesContainer) return;
+        
         const typingDiv = document.createElement('div');
         typingDiv.className = 'sjsu-conv-typing';
         typingDiv.id = 'sjsu-conv-typing-indicator';
@@ -991,6 +1052,32 @@ ${this.knowledgeBase.faq.laptop_checkout.answer}
     }
 }
 
-// Initialize the conversational chatbot
-const sjsuConvBot = new SJSUConversationalChatbot();
+// Initialize the conversational chatbot with proper error handling
+document.addEventListener('DOMContentLoaded', function() {
+    try {
+        sjsuConvBot = new SJSUConversationalChatbot();
+        console.log('SJSU Conversational Chatbot initialized successfully');
+    } catch (error) {
+        console.error('Error initializing SJSU Conversational Chatbot:', error);
+    }
+});
+
+// Fallback initialization if DOMContentLoaded already fired
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+        try {
+            sjsuConvBot = new SJSUConversationalChatbot();
+            console.log('SJSU Conversational Chatbot initialized successfully');
+        } catch (error) {
+            console.error('Error initializing SJSU Conversational Chatbot:', error);
+        }
+    });
+} else {
+    try {
+        sjsuConvBot = new SJSUConversationalChatbot();
+        console.log('SJSU Conversational Chatbot initialized successfully');
+    } catch (error) {
+        console.error('Error initializing SJSU Conversational Chatbot:', error);
+    }
+}
 </script>
