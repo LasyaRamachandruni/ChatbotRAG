@@ -1,4 +1,5 @@
-
+<!-- SJSU Library Conversational Chatbot for Google Sites Embed -->
+<!-- Copy this entire code block and paste it into Google Sites HTML embed -->
 
 <div id="sjsu-conversational-chatbot-widget"></div>
 
@@ -98,7 +99,7 @@
 
 .sjsu-conv-chat-header h3 {
     margin: 0;
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 600;
 }
 
@@ -112,21 +113,26 @@
     background: none;
     border: none;
     color: white;
-    font-size: 18px;
+    font-size: 24px;
     cursor: pointer;
-    padding: 5px;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border-radius: 50%;
-    transition: background-color 0.2s;
+    transition: background 0.2s;
 }
 
 .sjsu-conv-close-btn:hover {
-    background-color: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.2);
 }
 
 .sjsu-conv-chat-messages {
     flex: 1;
-    padding: 15px;
     overflow-y: auto;
+    padding: 20px;
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -136,16 +142,8 @@
     max-width: 85%;
     padding: 12px 16px;
     border-radius: 18px;
-    font-size: 14px;
-    line-height: 1.4;
     word-wrap: break-word;
-}
-
-.sjsu-conv-message.bot {
-    background: linear-gradient(135deg, #f0f2f5 0%, #e8eaf0 100%);
-    color: #333;
-    align-self: flex-start;
-    border-bottom-left-radius: 6px;
+    line-height: 1.4;
 }
 
 .sjsu-conv-message.user {
@@ -155,33 +153,41 @@
     border-bottom-right-radius: 6px;
 }
 
+.sjsu-conv-message.bot {
+    background: linear-gradient(135deg, #f0f2f5 0%, #e8eaf0 100%);
+    color: #333;
+    align-self: flex-start;
+    border-bottom-left-radius: 6px;
+}
+
 .sjsu-conv-quick-actions {
-    padding: 10px 15px;
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 15px 20px;
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: 8px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .sjsu-conv-quick-btn {
-    background: linear-gradient(135deg, #0055a2 0%, #003f7f 100%);
-    color: white;
-    border: none;
-    padding: 6px 10px;
-    border-radius: 12px;
-    font-size: 11px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid rgba(0, 85, 162, 0.2);
+    color: #0055a2;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 12px;
     cursor: pointer;
     transition: all 0.2s;
     white-space: nowrap;
 }
 
 .sjsu-conv-quick-btn:hover {
+    background: linear-gradient(135deg, #0055a2 0%, #003f7f 100%);
+    color: white;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 85, 162, 0.3);
 }
 
 .sjsu-conv-input-area {
-    padding: 15px;
+    padding: 15px 20px;
     border-top: 1px solid rgba(0, 0, 0, 0.1);
     display: flex;
     gap: 10px;
@@ -190,9 +196,9 @@
 
 .sjsu-conv-input {
     flex: 1;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    border-radius: 20px;
     padding: 12px 16px;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 25px;
     font-size: 14px;
     outline: none;
     transition: border-color 0.2s;
@@ -567,25 +573,19 @@ class SJSUConversationalChatbot {
 
     addWelcomeMessage() {
         setTimeout(() => {
-            this.addMessage('bot', `👋 **Hi! I'm your SJSU Library Assistant!**
+            this.addMessage('bot', `👋 **Welcome to SJSU Library!**
 
-I can help you with:
-• 📞 **Staff contacts** (Dean Michael Meth, department heads, etc.)
-• 📅 **Library hours** and locations
-• 🏛️ **Study spaces** and room bookings  
-• 📚 **Research help** and services
-• 📋 **Forms and procedures**
-• 🤝 **Committees** (ULB, ULLT, etc.)
-• ❓ **Follow-up questions** - I remember our conversation!
+I'm your conversational assistant, here to help with all things library-related. I can answer questions about:
 
-**Try asking:**
-• "What are the library hours?"
-• "How do I contact Dean Michael Meth?"
-• "Tell me about study rooms" → then "How do I book one?"
-• "Who is in the ULB committee?"
+📅 **Hours & Location**
+📞 **Staff Contacts** (including Dean Michael Meth)
+🏛️ **Study Spaces & Rooms**
+📚 **Research Help & Services**
+🖨️ **Printing & Technology**
+📋 **Forms & Procedures**
 
-What can I help you with today? 😊`);
-        }, 1000);
+**Try asking me anything!** I remember our conversation, so feel free to ask follow-up questions. 😊`);
+        }, 500);
     }
 
     sendMessage() {
@@ -714,56 +714,57 @@ ${this.knowledgeBase.services.study_spaces.collaborative_study}
 **💻 Computer Lab:**
 ${this.knowledgeBase.services.study_spaces.computer_lab}
 
-*Want to know how to book a room or need details about a specific floor?*`;
+*Need help booking a room or finding a specific type of study space?*`;
             this.currentContext = 'study_rooms';
 
-        // Follow-up: How to book rooms
-        } else if ((lowerMessage.includes('book') || lowerMessage.includes('reserve') || lowerMessage.includes('how')) && this.currentContext === 'study_rooms') {
-            contextIndicator = '💬 Following up on study rooms';
-            response = `📅 **How to Book Study Rooms:**
-
-**🌐 Online Booking:**
-${this.knowledgeBase.forms.room_booking.process}
-
-**⏰ Advance Booking:**
-${this.knowledgeBase.forms.room_booking.advance_booking}
-
-**⏱️ Duration:**
-${this.knowledgeBase.forms.room_booking.duration}
-
-**📍 Location:** Access the booking system through the library website or ask at the circulation desk
-
-*Need help with the booking system or have questions about room availability?*`;
-
         // Contact Information
-        } else if (lowerMessage.includes('contact') || lowerMessage.includes('phone') || lowerMessage.includes('call') || lowerMessage.includes('email')) {
-            response = `📞 **SJSU Library Contact Information:**
+        } else if (lowerMessage.includes('contact') || lowerMessage.includes('phone') || lowerMessage.includes('email') || lowerMessage.includes('call')) {
+            response = `📞 **Library Contact Information:**
 
-**📚 Main Library Desk:**
+**🏢 Main Desk:**
 Phone: ${this.knowledgeBase.staff.main_contact.phone}
 Email: ${this.knowledgeBase.staff.main_contact.email}
-Hours: ${this.knowledgeBase.staff.main_contact.hours}
 
-**🔍 Research Help Desk:**
+**📚 Research Help:**
 Phone: ${this.knowledgeBase.staff.reference.phone}
 Email: ${this.knowledgeBase.staff.reference.email}
 Location: ${this.knowledgeBase.staff.reference.location}
 
-**📜 Special Collections:**
+**📖 Special Collections:**
 Phone: ${this.knowledgeBase.staff.special_collections.phone}
 Email: ${this.knowledgeBase.staff.special_collections.email}
 Location: ${this.knowledgeBase.staff.special_collections.location}
 
-**👨‍💼 Dean Michael Meth:**
-Email: ${this.knowledgeBase.staff.dean.email}
-
-*Need a specific department or have questions about services?*`;
+*Need to contact a specific department or staff member?*`;
             this.currentContext = 'contact';
 
-        // Printing
-        } else if (lowerMessage.includes('print') || lowerMessage.includes('papercut')) {
-            response = `🖨️ **Printing at SJSU Library:**
+        // Research Help
+        } else if (lowerMessage.includes('research') || lowerMessage.includes('help') || lowerMessage.includes('librarian')) {
+            response = `📚 **Research Help Services:**
 
+**👥 Research Consultations:**
+${this.knowledgeBase.services.research_help.research_consultations}
+
+**🎓 Subject Librarians:**
+${this.knowledgeBase.services.research_help.subject_librarians}
+
+**📝 Citation Help:**
+${this.knowledgeBase.services.research_help.citation_help}
+
+**💻 Database Training:**
+${this.knowledgeBase.services.research_help.database_training}
+
+**📞 Contact:** ${this.knowledgeBase.staff.reference.phone}
+**📧 Email:** ${this.knowledgeBase.staff.reference.email}
+
+*Need help with a specific research project or database?*`;
+            this.currentContext = 'research_help';
+
+        // Printing
+        } else if (lowerMessage.includes('print') || lowerMessage.includes('printer')) {
+            response = `🖨️ **Printing Services:**
+
+**💳 How to Print:**
 ${this.knowledgeBase.faq.printing.answer}
 
 **💰 Costs:**
@@ -771,119 +772,31 @@ ${this.knowledgeBase.faq.printing.answer}
 • Color: $0.50 per page
 
 **💳 Payment:**
-• Add money at PaperCut stations
-• Online account management
-• Use SJSU ID card
+• Add money to your SJSU ID card
+• Use campus card stations or online portal
 
-**📍 Printer Locations:**
-• Ground floor computer lab
-• All study floors
-• Reference area (2nd floor)
+**📍 Location:** Ground floor computer lab
 
-*Need help adding money to your account or finding a specific printer?*`;
+*Need help with printing setup or payment?*`;
             this.currentContext = 'printing';
-
-        // Research Help
-        } else if (lowerMessage.includes('research') || lowerMessage.includes('help with') || lowerMessage.includes('citation')) {
-            response = `📚 **Research Help Services:**
-
-**👥 Research Consultations:**
-${this.knowledgeBase.services.research_help.research_consultations}
-
-**📖 Subject Librarians:**
-${this.knowledgeBase.services.research_help.subject_librarians}
-
-**📝 Citation Help:**
-${this.knowledgeBase.services.research_help.citation_help}
-
-**💾 Database Training:**
-${this.knowledgeBase.services.research_help.database_training}
-
-**📞 Contact Research Help:**
-Phone: ${this.knowledgeBase.staff.reference.phone}
-Email: ${this.knowledgeBase.staff.reference.email}
-Location: ${this.knowledgeBase.staff.reference.location}
-
-*Need help with a specific subject area or type of research?*`;
-            this.currentContext = 'research';
-
-        // ULB Committee
-        } else if (lowerMessage.includes('ulb') || lowerMessage.includes('university library board')) {
-            response = `🤝 **University Library Board (ULB):**
-
-**📋 Description:**
-${this.knowledgeBase.committees.ULB.description}
-
-**👥 Members:**
-${this.knowledgeBase.committees.ULB.members}
-
-**📅 Meetings:**
-${this.knowledgeBase.committees.ULB.meetings}
-
-**📧 Contact:**
-${this.knowledgeBase.committees.ULB.contact}
-
-*Want to know about other committees like ULLT or how to get involved?*`;
-            this.currentContext = 'committees';
-
-        // ULLT Committee
-        } else if (lowerMessage.includes('ullt') || lowerMessage.includes('leadership team')) {
-            response = `👥 **University Library Leadership Team (ULLT):**
-
-**📋 Description:**
-${this.knowledgeBase.committees.ULLT.description}
-
-**👥 Members:**
-${this.knowledgeBase.committees.ULLT.members}
-
-**📅 Meetings:**
-${this.knowledgeBase.committees.ULLT.meetings}
-
-**ℹ️ Note:**
-${this.knowledgeBase.committees.ULLT.contact}
-
-*Interested in other library committees or governance structure?*`;
-            this.currentContext = 'committees';
-
-        // Follow-up on committees
-        } else if ((lowerMessage.includes('other') || lowerMessage.includes('more') || lowerMessage.includes('committees')) && this.currentContext === 'committees') {
-            contextIndicator = '💬 Following up on committees';
-            response = `🤝 **Other Library Committees:**
-
-**🏛️ Faculty Senate Library Committee:**
-${this.knowledgeBase.committees.faculty_senate_library.description}
-Role: ${this.knowledgeBase.committees.faculty_senate_library.role}
-
-**🎯 Getting Involved:**
-• Faculty can join through college representatives
-• Students can apply for ULB positions
-• Contact Dean Michael Meth for more information
-
-**📧 Questions?** Email: ${this.knowledgeBase.staff.dean.email}
-
-*Want to know about specific committee responsibilities or meeting schedules?*`;
 
         // WiFi
         } else if (lowerMessage.includes('wifi') || lowerMessage.includes('internet') || lowerMessage.includes('network')) {
-            response = `📶 **WiFi Information:**
+            response = `📶 **WiFi Access:**
 
-${this.knowledgeBase.faq.wifi.answer}
+**🌐 Network Name:** SJSU_Premier
+**🔑 Login:** Use your SJSU credentials
+**👥 Guest Access:** Available for visitors
 
-**🔐 Networks:**
-• **SJSU_Premier**: Main network for students/staff
-• **SJSU_Guest**: Visitor network
+**💡 Tips:**
+• Connect automatically on campus
+• Guest network for visitors
+• IT support available if needed
 
-**🆔 Login:** Use your SJSU username and password
-
-**❓ Connection Issues?**
-• Check your SJSU account status
-• Contact IT Help Desk: 408-924-1530
-• Visit the computer lab for assistance
-
-*Having trouble connecting or need guest access information?*`;
+*Having trouble connecting or need IT help?*`;
             this.currentContext = 'wifi';
 
-        // Food and Drinks
+        // Food & Drink
         } else if (lowerMessage.includes('food') || lowerMessage.includes('drink') || lowerMessage.includes('eat') || lowerMessage.includes('coffee')) {
             response = `🍽️ **Food & Drink Policy:**
 
