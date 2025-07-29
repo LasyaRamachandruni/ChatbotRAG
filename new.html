@@ -1,0 +1,431 @@
+<!-- SJSU Conversational Chatbot Widget -->
+<div id="sjsu-conversational-chatbot-widget"></div>
+
+<style>
+/* SJSU Library Conversational Chatbot Styles */
+#sjsu-conversational-chatbot-widget {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 10000;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.sjsu-conv-chatbot-button {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0055a2 0%, #003f7f 100%);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 32px rgba(0, 85, 162, 0.4);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+.sjsu-conv-chatbot-button:hover {
+    transform: scale(1.1) translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0, 85, 162, 0.5);
+}
+
+.sjsu-conv-chatbot-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    position: relative;
+    z-index: 1;
+}
+
+.sjsu-conv-chat-container {
+    position: fixed;
+    bottom: 110px;
+    right: 20px;
+    width: 420px;
+    height: 650px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transform: translateY(20px) scale(0.95);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.sjsu-conv-chat-container.open {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+    visibility: visible;
+}
+
+.sjsu-conv-chat-header {
+    background: linear-gradient(135deg, #0055a2 0%, #003f7f 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 20px 20px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.sjsu-conv-chat-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.sjsu-conv-chat-header .subtitle {
+    font-size: 12px;
+    opacity: 0.9;
+    margin-top: 2px;
+}
+
+.sjsu-conv-close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+}
+
+.sjsu-conv-close-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.sjsu-conv-chat-messages {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.sjsu-conv-message {
+    max-width: 85%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    font-size: 14px;
+    line-height: 1.4;
+    word-wrap: break-word;
+}
+
+.sjsu-conv-message.bot {
+    background: linear-gradient(135deg, #f0f2f5 0%, #e8eaf0 100%);
+    color: #333;
+    align-self: flex-start;
+    border-bottom-left-radius: 6px;
+}
+
+.sjsu-conv-message.user {
+    background: linear-gradient(135deg, #0055a2 0%, #003f7f 100%);
+    color: white;
+    align-self: flex-end;
+    border-bottom-right-radius: 6px;
+}
+
+.sjsu-conv-quick-actions {
+    padding: 10px 15px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.sjsu-conv-quick-btn {
+    background: linear-gradient(135deg, #0055a2 0%, #003f7f 100%);
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.sjsu-conv-quick-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 85, 162, 0.3);
+}
+
+.sjsu-conv-input-area {
+    padding: 15px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.sjsu-conv-input {
+    flex: 1;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 20px;
+    padding: 12px 16px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.sjsu-conv-input:focus {
+    border-color: #0055a2;
+}
+
+.sjsu-conv-send-btn {
+    background: linear-gradient(135deg, #0055a2 0%, #003f7f 100%);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.sjsu-conv-send-btn:hover {
+    transform: scale(1.1);
+}
+
+.sjsu-conv-typing {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #f0f2f5 0%, #e8eaf0 100%);
+    border-radius: 18px;
+    border-bottom-left-radius: 6px;
+    align-self: flex-start;
+    max-width: 85%;
+}
+
+.sjsu-conv-typing-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #666;
+    animation: sjsu-conv-typing-animation 1.4s infinite ease-in-out;
+}
+
+.sjsu-conv-typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.sjsu-conv-typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes sjsu-conv-typing-animation {
+    0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+    40% { transform: scale(1); opacity: 1; }
+}
+
+/* Mobile Responsive */
+@media (max-width: 480px) {
+    .sjsu-conv-chat-container {
+        width: calc(100vw - 40px);
+        height: calc(100vh - 140px);
+        right: 20px;
+        left: 20px;
+    }
+}
+</style>
+
+<script>
+class SJSUConversationalChatbot {
+    constructor() {
+        this.isOpen = false;
+        this.isTyping = false;
+        this.conversationHistory = [];
+        this.currentContext = null;
+        this.init();
+    }
+
+    init() {
+        this.createWidget();
+        this.bindEvents();
+        this.addWelcomeMessage();
+    }
+
+    createWidget() {
+        const widget = document.getElementById('sjsu-conversational-chatbot-widget');
+        widget.innerHTML = `
+            <div class="sjsu-conv-chatbot-button" id="sjsu-conv-chatbot-button" aria-label="Open SJSU Library Chatbot" role="button" tabindex="0">
+                <img src="https://drive.google.com/uc?export=view&id=19bb6_0fj9zFrWvcGUurvQC303IGZmqhd"
+                     alt="King Library" class="sjsu-conv-chatbot-avatar">
+            </div>
+            <div class="sjsu-conv-chat-container" id="sjsu-conv-chat-container">
+                <div class="sjsu-conv-chat-header">
+                    <div>
+                        <h3>🏛️ SJSU Library Assistant</h3>
+                        <div class="subtitle">Ask me anything • Follow-up friendly</div>
+                    </div>
+                    <button class="sjsu-conv-close-btn" id="sjsu-conv-close-btn">×</button>
+                </div>
+                <div class="sjsu-conv-chat-messages" id="sjsu-conv-chat-messages"></div>
+                <div class="sjsu-conv-quick-actions">
+                    <button class="sjsu-conv-quick-btn" onclick="window.sjsuConvBot.quickAction('hours')">📅 Hours</button>
+                    <button class="sjsu-conv-quick-btn" onclick="window.sjsuConvBot.quickAction('contact')">📞 Contact</button>
+                    <button class="sjsu-conv-quick-btn" onclick="window.sjsuConvBot.quickAction('study_rooms')">🏛️ Study Rooms</button>
+                    <button class="sjsu-conv-quick-btn" onclick="window.sjsuConvBot.quickAction('printing')">🖨️ Printing</button>
+                    <button class="sjsu-conv-quick-btn" onclick="window.sjsuConvBot.quickAction('research_help')">📚 Research Help</button>
+                    <button class="sjsu-conv-quick-btn" onclick="window.sjsuConvBot.quickAction('dean')">👨‍💼 Dean Info</button>
+                </div>
+                <div class="sjsu-conv-input-area">
+                    <input type="text" class="sjsu-conv-input" id="sjsu-conv-input" placeholder="Ask me anything about the library..." maxlength="500">
+                    <button class="sjsu-conv-send-btn" id="sjsu-conv-send-btn">➤</button>
+                </div>
+            </div>
+        `;
+    }
+
+    bindEvents() {
+        const button = document.getElementById('sjsu-conv-chatbot-button');
+        const closeBtn = document.getElementById('sjsu-conv-close-btn');
+        const sendBtn = document.getElementById('sjsu-conv-send-btn');
+        const input = document.getElementById('sjsu-conv-input');
+
+        button.addEventListener('click', () => this.toggleChat());
+        button.addEventListener('keypress', (e) => { if (e.key === 'Enter' || e.key === ' ') this.toggleChat(); });
+        closeBtn.addEventListener('click', () => this.closeChat());
+        sendBtn.addEventListener('click', () => this.sendMessage());
+        input.addEventListener('keypress', (e) => { if (e.key === 'Enter') this.sendMessage(); });
+    }
+
+    toggleChat() {
+        this.isOpen = !this.isOpen;
+        const container = document.getElementById('sjsu-conv-chat-container');
+        container.classList.toggle('open', this.isOpen);
+        if (this.isOpen) document.getElementById('sjsu-conv-input').focus();
+    }
+
+    closeChat() {
+        this.isOpen = false;
+        document.getElementById('sjsu-conv-chat-container').classList.remove('open');
+    }
+
+    addWelcomeMessage() {
+        setTimeout(() => {
+            this.addMessage('bot', `👋 <strong>Hi! I'm your SJSU Library Assistant!</strong><br><br>
+I can help with:<br>
+• 📅 Library hours<br>
+• 📞 Staff contacts<br>
+• 🏛️ Study spaces<br>
+• 📋 Forms and procedures<br><br>
+Ask anything or click a quick button below!`);
+        }, 1000);
+    }
+
+    sendMessage() {
+        const input = document.getElementById('sjsu-conv-input');
+        const message = input.value.trim();
+        if (!message || this.isTyping) return;
+
+        this.addMessage('user', message);
+        this.conversationHistory.push({ type: 'user', message, timestamp: Date.now() });
+        input.value = '';
+
+        this.showTyping();
+        setTimeout(() => {
+            this.hideTyping();
+            this.generateConversationalResponse(message);
+        }, 1200);
+    }
+
+    quickAction(type) {
+        const actions = {
+            hours: 'What are the library hours?',
+            contact: 'How do I contact library staff?',
+            study_rooms: 'Tell me about study rooms',
+            printing: 'How do I print?',
+            research_help: 'Can I get help with research?',
+            dean: 'Who is the dean of the library?'
+        };
+        const question = actions[type];
+        if (question) {
+            this.addMessage('user', question);
+            this.conversationHistory.push({ type: 'user', message: question, timestamp: Date.now() });
+            this.showTyping();
+            setTimeout(() => {
+                this.hideTyping();
+                this.generateConversationalResponse(question);
+            }, 1000);
+        }
+    }
+
+    generateConversationalResponse(message) {
+        const lower = message.toLowerCase();
+        let response = "";
+        const contains = (keywords) => keywords.some(k => lower.includes(k));
+
+        if (contains(['hour', 'open', 'close'])) {
+            response = `<strong>Library Hours</strong><br>
+Mon–Thu: 7am–12am<br>Fri: 7am–6pm<br>Sat: 10am–6pm<br>Sun: 12pm–12am`;
+            this.currentContext = 'hours';
+        } else if (contains(['dean', 'michael meth'])) {
+            response = `<strong>Dean Info</strong><br>
+Michael Meth<br>Dean of University Library<br>Email: michael.meth@sjsu.edu`;
+            this.currentContext = 'staff';
+        } else if (contains(['study', 'room', 'quiet'])) {
+            response = `<strong>Study Spaces</strong><br>
+Group rooms (Floors 2–3): Book online<br>Silent study: Floors 4 & 7<br>Collaborative: Floor 2`;
+            this.currentContext = 'study_rooms';
+        } else if (contains(['print', 'printer', 'paper'])) {
+            response = `<strong>Printing Info</strong><br>
+Use PaperCut with your SJSU ID.<br>B&W: $0.10 | Color: $0.50<br>Available on all floors.`;
+            this.currentContext = 'printing';
+        } else if (this.currentContext === 'study_rooms' && contains(['book', 'reserve', 'how'])) {
+            response = `<strong>Booking Rooms</strong><br>
+Use the online system via library.sjsu.edu<br>Max: 2 hours<br>Reserve up to 7 days ahead.`;
+        } else {
+            response = `🤔 I'm here to help with SJSU Library info! Try asking about hours, printing, study spaces, or staff.`;
+        }
+
+        this.addMessage('bot', response);
+        this.conversationHistory.push({ type: 'bot', message: response, timestamp: Date.now() });
+    }
+
+    addMessage(sender, html) {
+        const messages = document.getElementById('sjsu-conv-chat-messages');
+        const msg = document.createElement('div');
+        msg.className = `sjsu-conv-message ${sender}`;
+        msg.innerHTML = html;
+        messages.appendChild(msg);
+        messages.scrollTop = messages.scrollHeight;
+    }
+
+    showTyping() {
+        this.isTyping = true;
+        const messages = document.getElementById('sjsu-conv-chat-messages');
+        const typing = document.createElement('div');
+        typing.className = 'sjsu-conv-typing';
+        typing.id = 'sjsu-conv-typing-indicator';
+        typing.innerHTML = `
+            <div class="sjsu-conv-typing-dot"></div>
+            <div class="sjsu-conv-typing-dot"></div>
+            <div class="sjsu-conv-typing-dot"></div>
+        `;
+        messages.appendChild(typing);
+        messages.scrollTop = messages.scrollHeight;
+    }
+
+    hideTyping() {
+        this.isTyping = false;
+        const typing = document.getElementById('sjsu-conv-typing-indicator');
+        if (typing) typing.remove();
+    }
+}
+
+// Global attachment
+window.sjsuConvBot = new SJSUConversationalChatbot();
+</script>
