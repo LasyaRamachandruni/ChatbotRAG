@@ -1,0 +1,763 @@
+<!-- MLK Library Smart Q&A Employee Chatbot - Direct Answers + Navigation -->
+<!-- Copy this entire code block and paste it into Google Sites HTML embed -->
+
+<div id="mlk-smart-chatbot-widget"></div>
+
+<style>
+/* Smart Q&A Employee Chatbot Styles */
+#mlk-smart-chatbot-widget {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 10000;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.mlk-smart-chatbot-button {
+    position: relative;
+    width: 75px;
+    height: 75px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 32px rgba(30, 60, 114, 0.4);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+.mlk-smart-chatbot-button:hover {
+    transform: scale(1.1) translateY(-2px);
+    box-shadow: 0 12px 40px rgba(30, 60, 114, 0.5);
+}
+
+.mlk-smart-chatbot-button::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    opacity: 0.7;
+    animation: mlk-smart-pulse 2s infinite;
+}
+
+@keyframes mlk-smart-pulse {
+    0% { transform: scale(1); opacity: 0.7; }
+    50% { transform: scale(1.2); opacity: 0.3; }
+    100% { transform: scale(1); opacity: 0.7; }
+}
+
+.mlk-smart-chatbot-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    position: relative;
+    z-index: 1;
+}
+
+.mlk-smart-chat-container {
+    position: fixed;
+    bottom: 100px;
+    right: 20px;
+    width: 400px;
+    height: 600px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transform: translateY(20px) scale(0.95);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.mlk-smart-chat-container.open {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+    visibility: visible;
+}
+
+.mlk-smart-chat-header {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 20px 20px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.mlk-smart-chat-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.mlk-smart-chat-header .subtitle {
+    font-size: 12px;
+    opacity: 0.9;
+    margin-top: 2px;
+}
+
+.mlk-smart-close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+}
+
+.mlk-smart-close-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.mlk-smart-chat-messages {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.mlk-smart-message {
+    max-width: 85%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    font-size: 14px;
+    line-height: 1.4;
+    word-wrap: break-word;
+}
+
+.mlk-smart-message.bot {
+    background: linear-gradient(135deg, #f0f2f5 0%, #e8eaf0 100%);
+    color: #333;
+    align-self: flex-start;
+    border-bottom-left-radius: 6px;
+}
+
+.mlk-smart-message.user {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    color: white;
+    align-self: flex-end;
+    border-bottom-right-radius: 6px;
+}
+
+.mlk-smart-quick-actions {
+    padding: 10px 15px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.mlk-smart-quick-btn {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.mlk-smart-quick-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(30, 60, 114, 0.3);
+}
+
+.mlk-smart-input-area {
+    padding: 15px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.mlk-smart-input {
+    flex: 1;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 20px;
+    padding: 12px 16px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.mlk-smart-input:focus {
+    border-color: #2a5298;
+}
+
+.mlk-smart-send-btn {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.mlk-smart-send-btn:hover {
+    transform: scale(1.1);
+}
+
+.mlk-smart-typing {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #f0f2f5 0%, #e8eaf0 100%);
+    border-radius: 18px;
+    border-bottom-left-radius: 6px;
+    align-self: flex-start;
+    max-width: 85%;
+}
+
+.mlk-smart-typing-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #666;
+    animation: mlk-smart-typing-animation 1.4s infinite ease-in-out;
+}
+
+.mlk-smart-typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.mlk-smart-typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes mlk-smart-typing-animation {
+    0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+    40% { transform: scale(1); opacity: 1; }
+}
+
+/* Mobile Responsive */
+@media (max-width: 480px) {
+    .mlk-smart-chat-container {
+        width: calc(100vw - 40px);
+        height: calc(100vh - 140px);
+        right: 20px;
+        left: 20px;
+    }
+}
+</style>
+
+<script>
+class MLKSmartChatbot {
+    constructor() {
+        this.isOpen = false;
+        this.isTyping = false;
+        this.knowledgeBase = this.initializeKnowledgeBase();
+        this.init();
+    }
+
+    initializeKnowledgeBase() {
+        return {
+            // Staff Information
+            staff: {
+                'dean': { name: 'Dr. Tracy Primich', email: 'tracy.primich@sjsu.edu', dept: 'Administration', room: 'Room 505' },
+                'associate_dean': { name: 'Dr. Toby Matoush', email: 'toby.matoush@sjsu.edu', dept: 'Research & Scholarship', room: 'Room 503' },
+                'hr_director': { name: 'Sarah Johnson', email: 'sarah.johnson@sjsu.edu', dept: 'Human Resources', room: 'Room 210', ext: '4-2156' },
+                'facilities': { name: 'Mike Chen', email: 'mike.chen@sjsu.edu', dept: 'Facilities', room: 'Room B12', ext: '4-2890' },
+                'it_support': { name: 'Tech Help Desk', email: 'library-tech@sjsu.edu', dept: 'IT Support', room: 'Room 125', ext: '4-2543' }
+            },
+
+            // Policies & Procedures
+            policies: {
+                vacation: {
+                    accrual: 'Staff accrue vacation at 8 hours per month for first 3 years, then 10 hours per month',
+                    request: 'Submit vacation requests through the HR portal at least 2 weeks in advance',
+                    carryover: 'Maximum 240 hours can be carried over to next fiscal year',
+                    approval: 'Supervisor approval required for all vacation requests'
+                },
+                sick_leave: {
+                    accrual: 'Staff accrue 8 hours of sick leave per month',
+                    usage: 'Can be used for personal illness, medical appointments, or family care',
+                    documentation: 'Medical documentation required for absences over 3 consecutive days'
+                },
+                professional_development: {
+                    budget: '$1,500 per fiscal year for professional development activities',
+                    approval: 'Submit PD request form to supervisor, then to finance for budget approval',
+                    types: 'Conferences, workshops, training courses, professional memberships',
+                    deadline: 'Requests must be submitted at least 30 days before event'
+                },
+                student_assistants: {
+                    hiring: 'Post positions through SJSU student employment portal',
+                    hours: 'Maximum 20 hours per week during academic year, 40 hours during breaks',
+                    pay: 'Starting at $16.50/hour, increases based on experience and performance',
+                    supervision: 'Weekly check-ins required, monthly evaluations'
+                }
+            },
+
+            // Meeting Rooms & Facilities
+            facilities: {
+                meeting_rooms: {
+                    'conference_a': { capacity: 12, equipment: 'TV, whiteboard', booking: 'facilities@sjsu.edu' },
+                    'conference_b': { capacity: 8, equipment: 'Projector, conference phone', booking: 'facilities@sjsu.edu' },
+                    'study_room_1': { capacity: 4, equipment: 'Whiteboard', booking: 'Self-service online' },
+                    'presentation_hall': { capacity: 50, equipment: 'AV system, microphones', booking: 'Advance reservation required' }
+                },
+                hours: {
+                    'library': 'Mon-Thu: 7am-12am, Fri: 7am-6pm, Sat: 10am-6pm, Sun: 12pm-12am',
+                    'admin_offices': 'Mon-Fri: 8am-5pm',
+                    'help_desk': 'Mon-Fri: 8am-8pm, Sat-Sun: 12pm-6pm'
+                }
+            },
+
+            // Common Forms & Procedures
+            forms: {
+                'vacation_request': {
+                    location: '/sjsu.edu/libraryscoop/departments/operations-administrative-services/human-resources',
+                    process: '1. Fill out vacation request form, 2. Get supervisor signature, 3. Submit to HR, 4. Receive confirmation email',
+                    deadline: 'Submit at least 2 weeks before requested dates'
+                },
+                'purchase_request': {
+                    location: '/sjsu.edu/libraryscoop/departments/operations-administrative-services/finance/purchasing',
+                    process: '1. Complete purchase requisition, 2. Get budget approval, 3. Submit to purchasing, 4. Track order status',
+                    limits: 'Supervisor approval required for purchases over $500'
+                },
+                'professional_development': {
+                    location: '/sjsu.edu/libraryscoop/departments/operations-administrative-services/finance/professional-developmenttravel',
+                    process: '1. Complete PD request form, 2. Get supervisor approval, 3. Submit to finance, 4. Book after approval',
+                    budget: '$1,500 per fiscal year per employee'
+                },
+                'incident_report': {
+                    location: '/sjsu.edu/libraryscoop/departments/operations-administrative-services/health-safety',
+                    process: '1. Complete incident report immediately, 2. Submit to supervisor, 3. Copy to HR if injury involved',
+                    urgency: 'Must be submitted within 24 hours of incident'
+                }
+            },
+
+            // Department Contacts
+            departments: {
+                'administration': { head: 'Dr. Tracy Primich', email: 'admin@library.sjsu.edu', main_functions: 'Strategic planning, budget oversight, policy development' },
+                'research_scholarship': { head: 'Dr. Toby Matoush', email: 'research@library.sjsu.edu', main_functions: 'Collection development, research support, archives' },
+                'operations': { head: 'Jennifer Martinez', email: 'operations@library.sjsu.edu', main_functions: 'HR, facilities, finance, purchasing' },
+                'innovations': { head: 'Alex Kim', email: 'innovations@library.sjsu.edu', main_functions: 'Digital services, UX, technology initiatives' },
+                'marcomm': { head: 'Lisa Wang', email: 'marketing@library.sjsu.edu', main_functions: 'Marketing, communications, events, social media' }
+            }
+        };
+    }
+
+    init() {
+        this.createWidget();
+        this.bindEvents();
+        this.addWelcomeMessage();
+    }
+
+    createWidget() {
+        const widget = document.getElementById('mlk-smart-chatbot-widget');
+        
+        widget.innerHTML = `
+            <div class="mlk-smart-chatbot-button" id="mlk-smart-chatbot-button">
+                <img src="https://www.sjpl.org/sites/default/files/styles/hero_image/public/2023-09/king-library-entrance-dusk.jpg" 
+                     alt="MLK Library" class="mlk-smart-chatbot-avatar">
+            </div>
+            
+            <div class="mlk-smart-chat-container" id="mlk-smart-chat-container">
+                <div class="mlk-smart-chat-header">
+                    <div>
+                        <h3>🧠 Smart MLK Library Assistant</h3>
+                        <div class="subtitle">Direct Answers + Navigation</div>
+                    </div>
+                    <button class="mlk-smart-close-btn" id="mlk-smart-close-btn">×</button>
+                </div>
+                
+                <div class="mlk-smart-chat-messages" id="mlk-smart-chat-messages"></div>
+                
+                <div class="mlk-smart-quick-actions">
+                    <button class="mlk-smart-quick-btn" onclick="mlkSmartBot.quickAction('vacation_policy')">🏖️ Vacation Policy</button>
+                    <button class="mlk-smart-quick-btn" onclick="mlkSmartBot.quickAction('staff_contact')">📞 Staff Contacts</button>
+                    <button class="mlk-smart-quick-btn" onclick="mlkSmartBot.quickAction('meeting_rooms')">🏛️ Meeting Rooms</button>
+                    <button class="mlk-smart-quick-btn" onclick="mlkSmartBot.quickAction('forms_help')">📋 Forms Help</button>
+                    <button class="mlk-smart-quick-btn" onclick="mlkSmartBot.quickAction('pd_budget')">💰 PD Budget</button>
+                    <button class="mlk-smart-quick-btn" onclick="mlkSmartBot.quickAction('student_assistants')">👥 Student Assistants</button>
+                </div>
+                
+                <div class="mlk-smart-input-area">
+                    <input type="text" class="mlk-smart-input" id="mlk-smart-input" 
+                           placeholder="Ask me anything about library policies, staff, procedures..." maxlength="500">
+                    <button class="mlk-smart-send-btn" id="mlk-smart-send-btn">➤</button>
+                </div>
+            </div>
+        `;
+    }
+
+    bindEvents() {
+        const button = document.getElementById('mlk-smart-chatbot-button');
+        const closeBtn = document.getElementById('mlk-smart-close-btn');
+        const sendBtn = document.getElementById('mlk-smart-send-btn');
+        const input = document.getElementById('mlk-smart-input');
+
+        button.addEventListener('click', () => this.toggleChat());
+        closeBtn.addEventListener('click', () => this.closeChat());
+        sendBtn.addEventListener('click', () => this.sendMessage());
+        
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.sendMessage();
+        });
+    }
+
+    toggleChat() {
+        this.isOpen = !this.isOpen;
+        const container = document.getElementById('mlk-smart-chat-container');
+        container.classList.toggle('open', this.isOpen);
+        
+        if (this.isOpen) {
+            document.getElementById('mlk-smart-input').focus();
+        }
+    }
+
+    closeChat() {
+        this.isOpen = false;
+        document.getElementById('mlk-smart-chat-container').classList.remove('open');
+    }
+
+    addWelcomeMessage() {
+        setTimeout(() => {
+            this.addMessage('bot', `🧠 **Hi! I'm your Smart MLK Library Assistant!**
+
+I can **directly answer questions** about:
+• 🏖️ Vacation & sick leave policies
+• 💰 Professional development budgets  
+• 📞 Staff contacts & extensions
+• 🏛️ Meeting room availability & booking
+• 📋 Form procedures & requirements
+• 👥 Student assistant policies
+• ⏰ Library hours & schedules
+
+**Try asking me:**
+• "How much vacation do I accrue?"
+• "Who do I contact for IT support?"
+• "What's the PD budget this year?"
+• "How do I book Conference Room A?"
+
+What would you like to know? 😊`);
+        }, 1000);
+    }
+
+    sendMessage() {
+        const input = document.getElementById('mlk-smart-input');
+        const message = input.value.trim();
+        
+        if (!message || this.isTyping) return;
+        
+        this.addMessage('user', message);
+        input.value = '';
+        
+        this.showTyping();
+        setTimeout(() => {
+            this.hideTyping();
+            this.generateSmartResponse(message);
+        }, 1500);
+    }
+
+    quickAction(action) {
+        const actions = {
+            'vacation_policy': 'How much vacation do I accrue and what is the policy?',
+            'staff_contact': 'Who should I contact for different issues?',
+            'meeting_rooms': 'How do I book meeting rooms and what are the options?',
+            'forms_help': 'Help me understand how to fill out common forms',
+            'pd_budget': 'What is the professional development budget and process?',
+            'student_assistants': 'What are the policies for student assistants?'
+        };
+        
+        if (actions[action]) {
+            this.addMessage('user', actions[action]);
+            this.showTyping();
+            setTimeout(() => {
+                this.hideTyping();
+                this.generateSmartResponse(actions[action]);
+            }, 1500);
+        }
+    }
+
+    generateSmartResponse(message) {
+        const lowerMessage = message.toLowerCase();
+        let response = '';
+
+        // Vacation Policy Questions
+        if (lowerMessage.includes('vacation') || lowerMessage.includes('time off') || lowerMessage.includes('pto')) {
+            const vacation = this.knowledgeBase.policies.vacation;
+            response = `🏖️ **Vacation Policy - Direct Answers:**
+
+**📊 Accrual Rate:**
+${vacation.accrual}
+
+**📅 Request Process:**
+${vacation.request}
+
+**💼 Carryover Policy:**
+${vacation.carryover}
+
+**✅ Approval Required:**
+${vacation.approval}
+
+**📋 Need the form?** Visit: /sjsu.edu/libraryscoop/departments/operations-administrative-services/human-resources
+
+**Questions?** Contact HR: ${this.knowledgeBase.staff.hr_director.name} at ${this.knowledgeBase.staff.hr_director.email} (${this.knowledgeBase.staff.hr_director.ext})`;
+
+        // Staff Contact Questions
+        } else if (lowerMessage.includes('contact') || lowerMessage.includes('who do i') || lowerMessage.includes('extension') || lowerMessage.includes('phone')) {
+            response = `📞 **Staff Contacts - Direct Information:**
+
+**🏢 Key Contacts:**
+• **Dean**: ${this.knowledgeBase.staff.dean.name} - ${this.knowledgeBase.staff.dean.email} (${this.knowledgeBase.staff.dean.room})
+• **HR Director**: ${this.knowledgeBase.staff.hr_director.name} - ${this.knowledgeBase.staff.hr_director.email} (${this.knowledgeBase.staff.hr_director.room}, Ext: ${this.knowledgeBase.staff.hr_director.ext})
+• **Facilities**: ${this.knowledgeBase.staff.facilities.name} - ${this.knowledgeBase.staff.facilities.email} (${this.knowledgeBase.staff.facilities.room}, Ext: ${this.knowledgeBase.staff.facilities.ext})
+• **IT Support**: ${this.knowledgeBase.staff.it_support.name} - ${this.knowledgeBase.staff.it_support.email} (${this.knowledgeBase.staff.it_support.room}, Ext: ${this.knowledgeBase.staff.it_support.ext})
+
+**🏢 Department Heads:**
+• **Administration**: ${this.knowledgeBase.departments.administration.head} - ${this.knowledgeBase.departments.administration.email}
+• **Research & Scholarship**: ${this.knowledgeBase.departments.research_scholarship.head} - ${this.knowledgeBase.departments.research_scholarship.email}
+• **Operations**: ${this.knowledgeBase.departments.operations.head} - ${this.knowledgeBase.departments.operations.email}
+
+**📋 Full Directory:** /sjsu.edu/libraryscoop/directory`;
+
+        // Meeting Room Questions
+        } else if (lowerMessage.includes('meeting room') || lowerMessage.includes('conference room') || lowerMessage.includes('book') || lowerMessage.includes('reserve')) {
+            response = `🏛️ **Meeting Rooms - Direct Information:**
+
+**🏢 Available Rooms:**
+• **Conference Room A**: ${this.knowledgeBase.facilities.meeting_rooms.conference_a.capacity} people, ${this.knowledgeBase.facilities.meeting_rooms.conference_a.equipment}
+• **Conference Room B**: ${this.knowledgeBase.facilities.meeting_rooms.conference_b.capacity} people, ${this.knowledgeBase.facilities.meeting_rooms.conference_b.equipment}
+• **Study Room 1**: ${this.knowledgeBase.facilities.meeting_rooms.study_room_1.capacity} people, ${this.knowledgeBase.facilities.meeting_rooms.study_room_1.equipment}
+• **Presentation Hall**: ${this.knowledgeBase.facilities.meeting_rooms.presentation_hall.capacity} people, ${this.knowledgeBase.facilities.meeting_rooms.presentation_hall.equipment}
+
+**📅 How to Book:**
+• **Small Rooms**: ${this.knowledgeBase.facilities.meeting_rooms.study_room_1.booking}
+• **Conference Rooms**: Email ${this.knowledgeBase.facilities.meeting_rooms.conference_a.booking}
+• **Presentation Hall**: ${this.knowledgeBase.facilities.meeting_rooms.presentation_hall.booking}
+
+**📞 Need Help?** Contact Facilities: ${this.knowledgeBase.staff.facilities.name} at ${this.knowledgeBase.staff.facilities.ext}
+
+**📋 Booking Page:** /sjsu.edu/libraryscoop/meeting-rooms`;
+
+        // Professional Development Questions
+        } else if (lowerMessage.includes('professional development') || lowerMessage.includes('pd budget') || lowerMessage.includes('conference') || lowerMessage.includes('training')) {
+            const pd = this.knowledgeBase.policies.professional_development;
+            response = `💰 **Professional Development - Direct Answers:**
+
+**💵 Annual Budget:**
+${pd.budget}
+
+**📋 Approval Process:**
+${pd.approval}
+
+**✅ Eligible Activities:**
+${pd.types}
+
+**⏰ Deadline:**
+${pd.deadline}
+
+**📝 Request Form:** /sjsu.edu/libraryscoop/departments/operations-administrative-services/finance/professional-developmenttravel
+
+**💡 Pro Tip:** Submit early! Popular conferences fill up quickly and budget approval takes time.
+
+**Questions?** Contact Finance or your supervisor for budget availability.`;
+
+        // Student Assistant Questions
+        } else if (lowerMessage.includes('student assistant') || lowerMessage.includes('student employee') || lowerMessage.includes('hiring')) {
+            const sa = this.knowledgeBase.policies.student_assistants;
+            response = `👥 **Student Assistants - Direct Policies:**
+
+**💼 Hiring Process:**
+${sa.hiring}
+
+**⏰ Work Hours:**
+${sa.hours}
+
+**💰 Pay Rate:**
+${sa.pay}
+
+**👨‍💼 Supervision Requirements:**
+${sa.supervision}
+
+**📋 More Info:**
+• Student Assistant Resources: /sjsu.edu/libraryscoop/student-employee-info
+• HR Knowledge: /sjsu.edu/libraryscoop/student-employee-info/hr-knowledge
+• Supervisor Guide: /sjsu.edu/libraryscoop/student-employee-info/student-assistant-supervisors
+
+**Questions?** Contact HR: ${this.knowledgeBase.staff.hr_director.name} at ${this.knowledgeBase.staff.hr_director.ext}`;
+
+        // Forms and Procedures
+        } else if (lowerMessage.includes('form') || lowerMessage.includes('procedure') || lowerMessage.includes('how do i fill') || lowerMessage.includes('purchase')) {
+            response = `📋 **Forms & Procedures - Direct Help:**
+
+**🏖️ Vacation Request:**
+Process: ${this.knowledgeBase.forms.vacation_request.process}
+Deadline: ${this.knowledgeBase.forms.vacation_request.deadline}
+Form: ${this.knowledgeBase.forms.vacation_request.location}
+
+**💳 Purchase Request:**
+Process: ${this.knowledgeBase.forms.purchase_request.process}
+Limits: ${this.knowledgeBase.forms.purchase_request.limits}
+Form: ${this.knowledgeBase.forms.purchase_request.location}
+
+**🚨 Incident Report:**
+Process: ${this.knowledgeBase.forms.incident_report.process}
+Urgency: ${this.knowledgeBase.forms.incident_report.urgency}
+Form: ${this.knowledgeBase.forms.incident_report.location}
+
+**📚 All Forms:** /sjsu.edu/libraryscoop/forms-policies
+
+**Need Help?** Contact the relevant department head or HR for guidance.`;
+
+        // Sick Leave Questions
+        } else if (lowerMessage.includes('sick leave') || lowerMessage.includes('sick day') || lowerMessage.includes('medical')) {
+            const sick = this.knowledgeBase.policies.sick_leave;
+            response = `🤒 **Sick Leave Policy - Direct Answers:**
+
+**📊 Accrual Rate:**
+${sick.accrual}
+
+**🏥 Usage:**
+${sick.usage}
+
+**📋 Documentation Required:**
+${sick.documentation}
+
+**📞 To Report Sick Leave:**
+1. Notify your supervisor as early as possible
+2. Submit sick leave request through HR portal
+3. Provide medical documentation if absence exceeds 3 days
+
+**Questions?** Contact HR: ${this.knowledgeBase.staff.hr_director.name} at ${this.knowledgeBase.staff.hr_director.ext}`;
+
+        // Library Hours
+        } else if (lowerMessage.includes('hours') || lowerMessage.includes('open') || lowerMessage.includes('close') || lowerMessage.includes('schedule')) {
+            response = `⏰ **Library Hours - Direct Information:**
+
+**📚 Library Hours:**
+${this.knowledgeBase.facilities.hours.library}
+
+**🏢 Administrative Offices:**
+${this.knowledgeBase.facilities.hours.admin_offices}
+
+**💻 Help Desk:**
+${this.knowledgeBase.facilities.hours.help_desk}
+
+**🎄 Holiday Hours:** Check the library website for special holiday schedules
+
+**📞 After Hours Issues:** Contact campus security or facilities emergency line
+
+**Questions?** Contact the main desk during operating hours.`;
+
+        // IT Support Questions
+        } else if (lowerMessage.includes('it support') || lowerMessage.includes('computer') || lowerMessage.includes('technology') || lowerMessage.includes('software')) {
+            response = `💻 **IT Support - Direct Contact:**
+
+**🔧 Tech Help Desk:**
+Contact: ${this.knowledgeBase.staff.it_support.name}
+Email: ${this.knowledgeBase.staff.it_support.email}
+Location: ${this.knowledgeBase.staff.it_support.room}
+Extension: ${this.knowledgeBase.staff.it_support.ext}
+
+**⏰ Support Hours:**
+${this.knowledgeBase.facilities.hours.help_desk}
+
+**🚨 For Urgent Issues:**
+• Email: ${this.knowledgeBase.staff.it_support.email}
+• Call: ${this.knowledgeBase.staff.it_support.ext}
+• Visit: ${this.knowledgeBase.staff.it_support.room}
+
+**💡 Common Issues We Handle:**
+• Password resets
+• Software installation
+• Hardware troubleshooting
+• Network connectivity
+• Printer problems
+
+**📋 Submit Ticket:** Use the IT service portal for non-urgent requests`;
+
+        // Default Smart Response
+        } else {
+            response = `🧠 **I can directly answer questions about:**
+
+**👥 Staff & Contacts:**
+• "Who do I contact for IT support?"
+• "What's the HR director's extension?"
+• "Who is the department head for Research?"
+
+**📋 Policies & Procedures:**
+• "How much vacation do I accrue?"
+• "What's the sick leave policy?"
+• "How do I request professional development?"
+
+**🏛️ Facilities & Resources:**
+• "How do I book Conference Room A?"
+• "What are the library hours?"
+• "What meeting rooms are available?"
+
+**💰 Budget & Finance:**
+• "What's the PD budget this year?"
+• "How do I submit a purchase request?"
+• "What's the student assistant pay rate?"
+
+**📝 Forms & Processes:**
+• "How do I fill out a vacation request?"
+• "What's the process for incident reports?"
+• "Where do I find the purchasing forms?"
+
+**Try asking me a specific question!** I'll give you the direct answer plus links to relevant forms or pages. 😊`;
+        }
+
+        this.addMessage('bot', response);
+    }
+
+    addMessage(sender, text) {
+        const messagesContainer = document.getElementById('mlk-smart-chat-messages');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `mlk-smart-message ${sender}`;
+        messageDiv.innerHTML = text.replace(/\n/g, '<br>');
+        
+        messagesContainer.appendChild(messageDiv);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    showTyping() {
+        this.isTyping = true;
+        const messagesContainer = document.getElementById('mlk-smart-chat-messages');
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'mlk-smart-typing';
+        typingDiv.id = 'mlk-smart-typing-indicator';
+        typingDiv.innerHTML = `
+            <div class="mlk-smart-typing-dot"></div>
+            <div class="mlk-smart-typing-dot"></div>
+            <div class="mlk-smart-typing-dot"></div>
+        `;
+        
+        messagesContainer.appendChild(typingDiv);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    hideTyping() {
+        this.isTyping = false;
+        const typingIndicator = document.getElementById('mlk-smart-typing-indicator');
+        if (typingIndicator) {
+            typingIndicator.remove();
+        }
+    }
+}
+
+// Initialize the smart chatbot
+const mlkSmartBot = new MLKSmartChatbot();
+</script>
