@@ -1,0 +1,630 @@
+<!-- MLK Library AI Chatbot - Ready to Embed in Google Sites -->
+<!-- Copy this entire code block and paste it into Google Sites HTML embed -->
+
+<div id="mlk-chatbot-widget"></div>
+
+<style>
+/* MLK Library Chatbot Styles */
+#mlk-chatbot-widget {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 10000;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.mlk-chatbot-button {
+    position: relative;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+.mlk-chatbot-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(102, 126, 234, 0.4);
+}
+
+.mlk-chatbot-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.mlk-pulse-ring {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border: 2px solid rgba(102, 126, 234, 0.6);
+    border-radius: 50%;
+    animation: mlkPulse 2s infinite;
+}
+
+@keyframes mlkPulse {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(1.4); opacity: 0; }
+}
+
+.mlk-chatbot-container {
+    position: absolute;
+    bottom: 80px;
+    right: 0;
+    width: 380px;
+    height: 600px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    transform: translateY(20px);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mlk-chatbot-container.mlk-visible {
+    display: flex;
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.mlk-chatbot-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.mlk-header-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.mlk-header-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.mlk-header-text h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.mlk-status {
+    margin: 0;
+    font-size: 13px;
+    opacity: 0.9;
+}
+
+.mlk-close-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    transition: all 0.2s ease;
+}
+
+.mlk-close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+}
+
+.mlk-messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.mlk-messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+.mlk-messages::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 3px;
+}
+
+.mlk-messages::-webkit-scrollbar-thumb {
+    background: rgba(102, 126, 234, 0.3);
+    border-radius: 3px;
+}
+
+.mlk-message {
+    display: flex;
+    gap: 12px;
+    animation: mlkMessageSlide 0.4s ease-out;
+}
+
+@keyframes mlkMessageSlide {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.mlk-message-avatar {
+    flex-shrink: 0;
+}
+
+.mlk-message-avatar img {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.mlk-message-content {
+    flex: 1;
+}
+
+.mlk-message-content p {
+    background: #f8f9ff;
+    padding: 12px 16px;
+    border-radius: 18px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #2d3748;
+    border: 1px solid rgba(102, 126, 234, 0.1);
+    margin: 0;
+}
+
+.mlk-user-message {
+    flex-direction: row-reverse;
+}
+
+.mlk-user-message .mlk-message-avatar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.mlk-user-message .mlk-message-content p {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    text-align: right;
+    border: none;
+}
+
+.mlk-quick-actions {
+    padding: 15px 20px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.mlk-quick-btn {
+    background: rgba(102, 126, 234, 0.1);
+    border: 1px solid rgba(102, 126, 234, 0.2);
+    color: #667eea;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.mlk-quick-btn:hover {
+    background: rgba(102, 126, 234, 0.15);
+    transform: translateY(-1px);
+}
+
+.mlk-input-area {
+    padding: 20px;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.mlk-input-container {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    background: #f8f9ff;
+    border-radius: 25px;
+    padding: 8px;
+    border: 1px solid rgba(102, 126, 234, 0.1);
+    transition: all 0.2s ease;
+}
+
+.mlk-input-container:focus-within {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.mlk-user-input {
+    flex: 1;
+    border: none;
+    background: none;
+    padding: 8px 16px;
+    font-size: 14px;
+    outline: none;
+    color: #2d3748;
+    font-family: inherit;
+}
+
+.mlk-user-input::placeholder {
+    color: #a0aec0;
+}
+
+.mlk-send-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    font-size: 14px;
+}
+
+.mlk-send-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.mlk-typing {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+    font-size: 12px;
+    color: #718096;
+}
+
+.mlk-typing-dots {
+    display: flex;
+    gap: 3px;
+}
+
+.mlk-typing-dots span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #667eea;
+    animation: mlkTyping 1.4s infinite;
+}
+
+.mlk-typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.mlk-typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes mlkTyping {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.3; }
+    30% { transform: translateY(-10px); opacity: 1; }
+}
+
+.mlk-footer {
+    padding: 12px 20px;
+    text-align: center;
+    font-size: 11px;
+    color: #a0aec0;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Mobile Responsive */
+@media (max-width: 480px) {
+    #mlk-chatbot-widget {
+        bottom: 15px;
+        right: 15px;
+    }
+    
+    .mlk-chatbot-container {
+        width: calc(100vw - 30px);
+        height: calc(100vh - 100px);
+        bottom: 75px;
+        right: -15px;
+    }
+    
+    .mlk-chatbot-button {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .mlk-chatbot-avatar {
+        width: 35px;
+        height: 35px;
+    }
+}
+</style>
+
+<script>
+// MLK Library Chatbot JavaScript
+(function() {
+    let isOpen = false;
+    let isTyping = false;
+    
+    // Initialize the chatbot
+    function initMLKChatbot() {
+        const widget = document.getElementById('mlk-chatbot-widget');
+        
+        widget.innerHTML = `
+            <div class="mlk-chatbot-button" onclick="toggleMLKChat()">
+                <img src="https://www.sjpl.org/sites/default/files/styles/hero_image/public/2023-09/king-library-entrance-dusk.jpg" 
+                     alt="MLK Library" class="mlk-chatbot-avatar">
+                <div class="mlk-pulse-ring"></div>
+            </div>
+            
+            <div class="mlk-chatbot-container" id="mlk-chat-container">
+                <div class="mlk-chatbot-header">
+                    <div class="mlk-header-content">
+                        <img src="https://www.sjpl.org/sites/default/files/styles/hero_image/public/2023-09/king-library-entrance-dusk.jpg" 
+                             alt="MLK Library" class="mlk-header-avatar">
+                        <div class="mlk-header-text">
+                            <h3>MLK Library Assistant</h3>
+                            <p class="mlk-status">Online • Ready to help! 🌟</p>
+                        </div>
+                    </div>
+                    <button class="mlk-close-btn" onclick="toggleMLKChat()">×</button>
+                </div>
+                
+                <div class="mlk-messages" id="mlk-messages">
+                    <div class="mlk-message">
+                        <div class="mlk-message-avatar">
+                            <img src="https://www.sjpl.org/sites/default/files/styles/hero_image/public/2023-09/king-library-entrance-dusk.jpg" alt="MLK Library">
+                        </div>
+                        <div class="mlk-message-content">
+                            <p>Hey there! 👋 I'm your friendly MLK Library assistant! I'm here to help you discover all the amazing resources and services at the Dr. Martin Luther King Jr. Library. What would you like to know about? ✨</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mlk-quick-actions">
+                    <button class="mlk-quick-btn" onclick="sendQuickMessage('What are your hours?')">🕐 Hours</button>
+                    <button class="mlk-quick-btn" onclick="sendQuickMessage('How do I get a library card?')">📚 Library Card</button>
+                    <button class="mlk-quick-btn" onclick="sendQuickMessage('What services do you offer?')">📋 Services</button>
+                    <button class="mlk-quick-btn" onclick="sendQuickMessage('Tell me about upcoming events')">🎉 Events</button>
+                </div>
+                
+                <div class="mlk-input-area">
+                    <div class="mlk-input-container">
+                        <input type="text" class="mlk-user-input" id="mlk-user-input" 
+                               placeholder="Ask me anything about the library... 💭" maxlength="500">
+                        <button class="mlk-send-btn" onclick="sendMLKMessage()">→</button>
+                    </div>
+                    <div class="mlk-typing" id="mlk-typing">
+                        <div class="mlk-typing-dots">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                        <span>Assistant is typing...</span>
+                    </div>
+                </div>
+                
+                <div class="mlk-footer">
+                    <p>Powered by AI • Made with ❤️ for MLK Library</p>
+                </div>
+            </div>
+        `;
+        
+        // Add Enter key listener
+        const input = document.getElementById('mlk-user-input');
+        input.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMLKMessage();
+            }
+        });
+    }
+    
+    // Toggle chat window
+    window.toggleMLKChat = function() {
+        const container = document.getElementById('mlk-chat-container');
+        
+        if (isOpen) {
+            container.classList.remove('mlk-visible');
+            isOpen = false;
+        } else {
+            container.classList.add('mlk-visible');
+            isOpen = true;
+        }
+    };
+    
+    // Send message function
+    window.sendMLKMessage = function() {
+        const input = document.getElementById('mlk-user-input');
+        const message = input.value.trim();
+        
+        if (!message || isTyping) return;
+        
+        input.value = '';
+        addMLKMessage(message, 'user');
+        showMLKTyping();
+        
+        setTimeout(() => {
+            const response = generateMLKResponse(message.toLowerCase());
+            hideMLKTyping();
+            addMLKMessage(response, 'bot');
+        }, 1000 + Math.random() * 1000);
+    };
+    
+    // Send quick message
+    window.sendQuickMessage = function(message) {
+        document.getElementById('mlk-user-input').value = message;
+        sendMLKMessage();
+    };
+    
+    // Add message to chat
+    function addMLKMessage(text, type) {
+        const messagesContainer = document.getElementById('mlk-messages');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `mlk-message ${type === 'user' ? 'mlk-user-message' : ''}`;
+        
+        if (type === 'user') {
+            messageDiv.innerHTML = `
+                <div class="mlk-message-avatar">U</div>
+                <div class="mlk-message-content">
+                    <p>${escapeHtml(text)}</p>
+                </div>
+            `;
+        } else {
+            messageDiv.innerHTML = `
+                <div class="mlk-message-avatar">
+                    <img src="https://www.sjpl.org/sites/default/files/styles/hero_image/public/2023-09/king-library-entrance-dusk.jpg" alt="MLK Library">
+                </div>
+                <div class="mlk-message-content">
+                    <p>${text}</p>
+                </div>
+            `;
+        }
+        
+        messagesContainer.appendChild(messageDiv);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    
+    // Show typing indicator
+    function showMLKTyping() {
+        isTyping = true;
+        document.getElementById('mlk-typing').style.display = 'flex';
+    }
+    
+    // Hide typing indicator
+    function hideMLKTyping() {
+        isTyping = false;
+        document.getElementById('mlk-typing').style.display = 'none';
+    }
+    
+    // Generate response based on user message
+    function generateMLKResponse(message) {
+        // Greetings
+        if (containsWords(message, ['hello', 'hi', 'hey', 'greetings'])) {
+            const greetings = [
+                "Hello there! 👋 Welcome to the MLK Library! I'm absolutely delighted to meet you! How can I brighten your day with some amazing library info? ✨",
+                "Hey! 🌟 What a wonderful day to explore everything our fantastic library has to offer! What brings you here today?",
+                "Hi there, superstar! 🎉 I'm your cheerful library assistant, and I'm here to make your library experience absolutely amazing! What can I help you discover?"
+            ];
+            return greetings[Math.floor(Math.random() * greetings.length)];
+        }
+        
+        // Hours
+        if (containsWords(message, ['hours', 'open', 'close', 'time'])) {
+            return '🕐 Our fantastic hours are:<br><br>📅 <strong>Monday-Thursday:</strong> 8:00 AM - 8:00 PM<br>📅 <strong>Friday-Saturday:</strong> 8:00 AM - 6:00 PM<br>📅 <strong>Sunday:</strong> 1:00 PM - 6:00 PM<br><br>We\'re open almost every day to serve you! Come visit us anytime! 🌟';
+        }
+        
+        // Library card
+        if (containsWords(message, ['card', 'library card', 'membership', 'sign up'])) {
+            return '📚 Getting a library card is super easy and totally FREE! 🎉<br><br>You can get one if you:<br>✅ Live in San José<br>✅ Work in San José<br>✅ Learn in San José<br><br>Just visit us at the library with a valid ID, and we\'ll get you set up in no time! You\'ll have access to books, eBooks, computers, events, and SO much more! It\'s like having a key to endless knowledge! 🗝️✨';
+        }
+        
+        // Location
+        if (containsWords(message, ['location', 'address', 'where', 'directions'])) {
+            return '📍 You can find us at:<br><br><strong>150 E San Fernando St</strong><br><strong>San Jose, CA 95112</strong><br><br>🚗 <strong>Parking:</strong> FREE for the first 90 minutes at the 4th St. Garage!<br>🚌 <strong>Transit:</strong> We\'re accessible by multiple bus routes and light rail<br><br>We\'re right in the heart of downtown San José - can\'t miss us! The building is absolutely beautiful! 🏛️✨';
+        }
+        
+        // Services
+        if (containsWords(message, ['services', 'what do you offer', 'resources', 'facilities'])) {
+            return '🎯 We offer SO many amazing services! Here are some highlights:<br><br>🌟 Digital Humanities Center<br>🌟 SJPL Works: Career & Business services<br>🌟 Teen HQ: Teen Center<br>🌟 Wee Explore PlaySpace<br>🌟 Study and meeting rooms<br>🌟 Computer and printing services<br>🌟 Free Wi-Fi<br>🌟 Special collections<br><br>And that\'s just the beginning! We also have public art, a café, and 9 floors of incredible resources! What specific service interests you most? 😊';
+        }
+        
+        // Events
+        if (containsWords(message, ['events', 'programs', 'activities', 'workshops'])) {
+            return '🎉 We host TONS of exciting events and programs! Here\'s what you can expect:<br><br>🎨 <strong>Creative workshops</strong> - Art, maker spaces, and hands-on learning<br>📚 <strong>Educational programs</strong> - For all ages from toddlers to seniors<br>💻 <strong>Tech training</strong> - Digital skills and computer classes<br>🎭 <strong>Cultural events</strong> - Celebrating our diverse community<br>👥 <strong>Community gatherings</strong> - Meet new people and make connections!<br><br>Events happen throughout the week! Check our website or visit us to see what\'s coming up. There\'s always something fun happening here! ✨';
+        }
+        
+        // Study spaces
+        if (containsWords(message, ['study', 'study rooms', 'meeting rooms', 'space'])) {
+            return '📖 We have AMAZING spaces for studying and meetings!<br><br>🏠 <strong>Study Rooms:</strong> Perfect for focused individual or group study<br>👥 <strong>Meeting Rooms:</strong> Great for team projects and presentations<br>💻 <strong>Tech-equipped spaces:</strong> With all the tools you need<br>🤫 <strong>Quiet zones:</strong> For deep concentration<br>☕ <strong>Collaborative areas:</strong> Where ideas flow freely!<br><br>You can reserve rooms in advance, and we have spaces for every type of learner! Whether you\'re cramming for exams or brainstorming the next big idea, we\'ve got you covered! 🌟';
+        }
+        
+        // Parking
+        if (containsWords(message, ['parking', 'car', 'drive'])) {
+            return '🚗 Great news about parking!<br><br>🎉 <strong>FREE parking</strong> for the first 90 minutes at the 4th Street Garage!<br>📍 The garage is super convenient and close to our main entrance<br>⏰ Perfect for quick visits, studying sessions, or browsing our collections<br><br>After 90 minutes, regular parking rates apply, but honestly, once you discover everything we have here, you might want to stay all day! 😄✨';
+        }
+        
+        // MLK Collection
+        if (containsWords(message, ['mlk', 'martin luther king', 'king collection', 'civil rights'])) {
+            return '👑 The Dr. Martin Luther King Jr. Collection is one of our most treasured resources!<br><br>📚 <strong>What\'s included:</strong><br>🎬 Books, videos, and audio recordings about Dr. King<br>📰 Special gallery with photos and newspaper clippings<br>📅 Timeline of Dr. King\'s incredible life<br>🏛️ Bronze bust by renowned artist Sascha Schnittmann<br><br>✨ It\'s located on our Third Floor and everything can be checked out! This collection beautifully honors Dr. King\'s legacy and the Civil Rights movement. It\'s truly inspiring! 🌟';
+        }
+        
+        // Technology
+        if (containsWords(message, ['computer', 'internet', 'wifi', 'printing'])) {
+            return '💻 We\'re totally tech-friendly! Here\'s what we offer:<br><br>📶 <strong>FREE Wi-Fi</strong> throughout the entire building<br>🖥️ <strong>Public computers</strong> for research, work, and fun<br>🖨️ <strong>Printing services</strong> for all your document needs<br>📱 <strong>Device charging stations</strong><br>💻 <strong>Laptop lending</strong> - you can actually borrow Chromebooks, iPads, and laptops!<br><br>Whether you need to finish homework, apply for jobs, or just browse the web, we\'ve got all the tech support you need! 🚀';
+        }
+        
+        // Contact
+        if (containsWords(message, ['contact', 'phone', 'call', 'reach'])) {
+            return '📞 We\'d love to hear from you! Here\'s how to reach us:<br><br>☎️ <strong>Phone:</strong> (408) 808-2000<br>📍 <strong>Visit us:</strong> 150 E San Fernando St, San Jose, CA 95112<br>💬 <strong>In person:</strong> We\'re here and ready to help!<br><br>Our amazing staff is always happy to assist you with anything you need. Don\'t hesitate to reach out - we\'re here to make your library experience incredible! 🌟😊';
+        }
+        
+        // Thanks
+        if (containsWords(message, ['thank', 'thanks', 'appreciate'])) {
+            const thanks = [
+                "Aww, you're so welcome! 🥰 It absolutely makes my day to help wonderful people like you! Come back anytime - we'll be here with smiles and knowledge! ✨",
+                "You're incredibly kind! 😊 Thank YOU for being part of our amazing library community! We're lucky to have you! 🌟",
+                "It's my absolute pleasure! 🎉 Helping awesome library users like you is what makes this job so rewarding! See you soon! 💫"
+            ];
+            return thanks[Math.floor(Math.random() * thanks.length)];
+        }
+        
+        // Goodbye
+        if (containsWords(message, ['bye', 'goodbye', 'see you', 'later'])) {
+            const goodbyes = [
+                "Goodbye for now! 👋 Thanks for chatting with me - you've made my day brighter! Come back soon, and remember, we're always here when you need us! ✨📚",
+                "See you later, superstar! 🌟 It was wonderful helping you today! Don't be a stranger - our doors (and my chat window) are always open! 😊",
+                "Bye bye! 🎉 Keep being awesome, and remember - the MLK Library is your home for learning, growing, and discovering amazing things! Until next time! 💫"
+            ];
+            return goodbyes[Math.floor(Math.random() * goodbyes.length)];
+        }
+        
+        // Default response
+        return 'That\'s a great question! 🤔 While I might not have the exact answer you\'re looking for, I\'m here to help with anything about our amazing library!<br><br>💡 <strong>I can tell you about:</strong><br>📍 Hours and location<br>📚 Services and resources<br>🎉 Events and programs<br>🏛️ Special collections<br>💻 Technology and study spaces<br><br>What would you like to know more about? I\'m excited to help you discover all the wonderful things our library has to offer! ✨😊';
+    }
+    
+    // Helper function to check if message contains certain words
+    function containsWords(text, words) {
+        return words.some(word => text.includes(word));
+    }
+    
+    // Escape HTML to prevent XSS
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initMLKChatbot);
+    } else {
+        initMLKChatbot();
+    }
+})();
+</script>
