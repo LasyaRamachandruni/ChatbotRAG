@@ -1,146 +1,64 @@
-# 🤖 MLK Library AI Chatbot
+# SJSU King Library Finals Week Email Template
 
-A cheerful, quirky AI chatbot designed specifically for the Dr. Martin Luther King Jr. Library, built with free tools and ready to embed into Google Sites!
+## Overview
+This is a responsive, production-ready HTML email template for recruiting volunteers and donors for SJSU King Library Finals Week events. The template is designed to be reusable with personalization and easy swaps for dates, signers, and links.
 
-## ✨ Features
+## Files
+- `finals_week_template.html` - Complete HTML email template with inline styles
+- `finals_week_template.txt` - Plain text fallback version
 
-- 🎨 **Beautiful Modern UI** - Clean, responsive design with smooth animations
-- 🌟 **Cheerful Personality** - Quirky, friendly responses that delight users
-- 🏛️ **MLK Library Themed** - Features the iconic MLK Library building as avatar
-- 📚 **Comprehensive Knowledge** - Knows about library services, hours, events, and more
-- 🔧 **Easy to Embed** - Simple integration with Google Sites
-- 📱 **Mobile Responsive** - Works perfectly on all devices
-- 🆓 **100% Free** - No API costs or external dependencies
-- ⚡ **Lightning Fast** - Instant responses with no delays
+## Subject Line Options
 
-## 🚀 Quick Start
+### Option 1
+**Subject:** Help us bring Finals Week to life — just 4 hours makes a difference  
+**Preheader:** Join us Dec 9–10 & May 12–13 at King Library.
 
-### Option 1: Direct Embed (Recommended)
-1. Copy the embed code from `embed.html`
-2. Paste it into your Google Sites HTML embed block
-3. Publish your site - that's it! 🎉
+### Option 2
+**Subject:** Two evenings. Big impact for students. Are you in?  
+**Preheader:** Volunteer 7–10 PM with refreshments, activities, and support.
 
-### Option 2: Host Yourself
-1. Upload `index.html`, `style.css`, and `script.js` to your web server
-2. Use iframe embed code to include it in Google Sites
+## Audience Variants
+The template is designed to work with three audience variants by adjusting the greeting and sign-off language:
 
-## 📋 Files Structure
+1. **Faculty & Instructors** - Use "Colleague," in greeting
+2. **Student Services & Staff** - Use "Team," in greeting  
+3. **Deans/Department Leaders** - Use "Dean [LastName]," in greeting
 
-```
-├── index.html          # Main chatbot interface
-├── style.css           # Beautiful styling and animations
-├── script.js           # Chatbot logic and responses
-├── embed.html          # Embedding guide and code
-├── README.md           # This file
-└── requirements.txt    # Python dependencies (if needed)
-```
+## Personalization Tokens
+- `[[FirstName|Colleague]]` - Greeting personalization
+- `[[SignerName|Your Name]]` - Signer's name
+- `[[SignerTitle|Title]]` - Signer's title
 
-## 🎯 What the Chatbot Knows
+## Key Features
+- **Responsive Design**: 640px max width, mobile-optimized
+- **Email Client Compatibility**: Gmail, Outlook, Apple Mail, mobile clients
+- **Table-based Layout**: Nested tables with inline styles only
+- **VML Support**: Bulletproof buttons for Outlook compatibility
+- **Accessibility**: Proper contrast, alt text, semantic roles
+- **Dark Theme**: Deep navy backgrounds (#0b1220, #0e1a33) with light text
 
-The chatbot is equipped with comprehensive knowledge about:
+## Customization Points
+All editable variables are clearly marked at the top of the HTML file:
+- Organization details
+- Contact information
+- URLs (RSVP form, video, images)
+- Dates and event details
+- Signer information
 
-- 🕐 **Library Hours** - Opening and closing times
-- 📍 **Location & Directions** - Address, parking, transit info
-- 📚 **Services** - All library services and resources
-- 🎉 **Events & Programs** - Information about library activities
-- 👥 **Study Spaces** - Meeting rooms and study areas
-- 💻 **Technology** - Computers, Wi-Fi, printing services
-- 🎨 **Special Collections** - MLK Collection, art installations
-- 👶 **Family Services** - Children's programs and teen spaces
-- 💼 **Career Services** - SJPL Works and business resources
+## How to Use
+1. Replace placeholder URLs with actual URLs
+2. Update merge fields for personalization
+3. Modify dates as needed for future semesters
+4. Update signer information
+5. Test across email clients before sending
 
-## 🛠️ Customization
-
-### Change Colors
-Edit the CSS gradient values:
-```css
-background: linear-gradient(135deg, #YOUR_COLOR_1 0%, #YOUR_COLOR_2 100%);
-```
-
-### Update Avatar
-Replace the image URL in the HTML:
-```html
-<img src="YOUR_IMAGE_URL" alt="Your Library">
-```
-
-### Add More Responses
-Extend the `generateResponse()` function in `script.js`:
-```javascript
-if (this.containsWords(lowerMessage, ['your', 'keywords'])) {
-    return 'Your custom response here! 😊';
-}
-```
-
-## 🌐 Embedding in Google Sites
-
-### Step-by-Step Guide:
-
-1. **Open Google Sites Editor**
-   - Go to your Google Sites page
-   - Click "Edit" to enter edit mode
-
-2. **Insert Embed Block**
-   - Click "Insert" in the toolbar
-   - Select "Embed"
-   - Choose "Embed code"
-
-3. **Paste the Code**
-   - Copy the complete embed code from `embed.html`
-   - Paste it into the embed dialog
-   - Click "Add"
-
-4. **Publish**
-   - Click "Publish" to make your chatbot live!
-
-## 💡 Pro Tips
-
-- **Test Responsiveness**: Check how it looks on mobile devices
-- **Monitor Performance**: The chatbot is lightweight and won't slow down your site
-- **Update Content**: Easily modify responses to match your specific needs
-- **Accessibility**: Built with screen readers and keyboard navigation in mind
-
-## 🔧 Technical Details
-
-- **No External APIs**: Works completely offline
-- **Vanilla JavaScript**: No frameworks required
-- **CSS3 Animations**: Smooth, modern interactions
-- **Mobile-First Design**: Optimized for all screen sizes
-- **Cross-Browser Compatible**: Works in all modern browsers
-
-## 🎨 Design Philosophy
-
-The chatbot follows these design principles:
-- **Friendly & Approachable**: Warm colors and cheerful language
-- **Professional Yet Playful**: Maintains library credibility while being fun
-- **Accessible**: High contrast, clear fonts, keyboard navigation
-- **Fast & Lightweight**: Minimal resource usage
-
-## 📞 Support
-
-If you need help customizing or deploying the chatbot:
-1. Check the `embed.html` file for detailed instructions
-2. Review the code comments for customization guidance
-3. Test thoroughly before going live
-
-## 🎉 Success Stories
-
-This chatbot is designed to:
-- ✅ Reduce repetitive questions to library staff
-- ✅ Provide 24/7 assistance to website visitors
-- ✅ Enhance user experience with instant responses
-- ✅ Showcase the library's modern, tech-forward approach
-
-## 🔮 Future Enhancements
-
-Potential improvements you could add:
-- Integration with library catalog search
-- Real-time event calendar integration
-- Multi-language support
-- Voice interaction capabilities
-- Analytics and usage tracking
-
----
-
-**Built with ❤️ for the MLK Library Community**
-
-*Ready to delight your visitors with an amazing chatbot experience!* ✨
+## Technical Requirements Met
+- ✅ Table-based layout with nested tables
+- ✅ Inline CSS only (no external stylesheets)
+- ✅ VML fallbacks for Outlook buttons
+- ✅ Responsive design with mobile breakpoints
+- ✅ Web-safe fonts (Arial/Helvetica)
+- ✅ Proper contrast ratios for accessibility
+- ✅ Alt text on all images
+- ✅ Target="_blank" for external links
+- ✅ Merge field syntax for personalization
