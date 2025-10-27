@@ -3,8 +3,10 @@ class MLKLibraryChatbot {
         this.isOpen = false;
         this.isTyping = false;
         this.websiteContent = null;
+        this.knowledgeBase = null;
         this.init();
         this.loadWebsiteContent();
+        this.loadKnowledgeBase();
     }
 
     init() {
@@ -177,8 +179,91 @@ class MLKLibraryChatbot {
         };
     }
 
+    async loadKnowledgeBase() {
+        try {
+            // Load knowledge base files
+            const orgChartResponse = await fetch('knowledge_base/org_chart_sjsu_king_library.md');
+            const contactsResponse = await fetch('knowledge_base/contacts_help_services.md');
+            const parkingResponse = await fetch('knowledge_base/sjsu_parking_permit_request.md');
+            const eventFundingResponse = await fetch('knowledge_base/event_funding_request.md');
+            
+            const orgChartText = await orgChartResponse.text();
+            const contactsText = await contactsResponse.text();
+            const parkingText = await parkingResponse.text();
+            const eventFundingText = await eventFundingResponse.text();
+            
+            this.knowledgeBase = {
+                orgChart: orgChartText,
+                contacts: contactsText,
+                parking: parkingText,
+                eventFunding: eventFundingText
+            };
+        } catch (error) {
+            console.log('Could not load knowledge base files:', error);
+            this.knowledgeBase = null;
+        }
+    }
+
+    searchKnowledgeBase(query) {
+        if (!this.knowledgeBase) return null;
+        
+        const lowerQuery = query.toLowerCase();
+        const results = [];
+        
+        // Handle name variations (e.g., "Michel Meth" vs "Michael Meth")
+        const nameVariations = {
+            'michel meth': ['michael meth'],
+            'lisa josefi': ['lisa josefik'],
+            'lisa josefik': ['lisa josefi']
+        };
+        
+        let searchTerms = [lowerQuery];
+        if (nameVariations[lowerQuery]) {
+            searchTerms = searchTerms.concat(nameVariations[lowerQuery]);
+        }
+        
+        // Search in all knowledge base files
+        const files = [
+            { name: 'orgChart', content: this.knowledgeBase.orgChart },
+            { name: 'contacts', content: this.knowledgeBase.contacts },
+            { name: 'parking', content: this.knowledgeBase.parking },
+            { name: 'eventFunding', content: this.knowledgeBase.eventFunding }
+        ];
+        
+        for (const file of files) {
+            const lines = file.content.split('\n');
+            for (const line of lines) {
+                const lowerLine = line.toLowerCase();
+                for (const term of searchTerms) {
+                    if (lowerLine.includes(term)) {
+                        results.push(line.trim());
+                        break; // Avoid duplicate lines
+                    }
+                }
+            }
+        }
+        
+        return results.length > 0 ? results : null;
+    }
+
     async generateResponse(userMessage) {
         const lowerMessage = userMessage.toLowerCase();
+        
+        // First, try to search the knowledge base for people or specific information
+        const knowledgeResults = this.searchKnowledgeBase(userMessage);
+        if (knowledgeResults) {
+            let response = "I found some information for you! 📚\n\n";
+            
+            // Format the results nicely
+            const formattedResults = knowledgeResults.map(result => {
+                // Remove markdown formatting for cleaner display
+                return result.replace(/^[-*]\s*/, '').replace(/\*\*(.*?)\*\*/g, '$1');
+            });
+            
+            response += formattedResults.join('\n');
+            response += "\n\nIs there anything specific about this information you'd like to know more about? 😊";
+            return response;
+        }
         
         // Enhanced pattern matching with cheerful responses
         if (this.containsWords(lowerMessage, ['hello', 'hi', 'hey', 'greetings'])) {

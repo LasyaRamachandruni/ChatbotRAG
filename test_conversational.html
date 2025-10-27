@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversational Chatbot Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+        .test-button {
+            background: #0055a2;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .test-result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 3px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>Conversational Chatbot Test</h1>
+    
+    <div class="test-section">
+        <h3>Test Knowledge Base Search</h3>
+        <input type="text" id="test-query" class="test-input" placeholder="Enter a name or query to search...">
+        <button onclick="testSearch()" class="test-button">Search</button>
+        <div id="test-result" class="test-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Sample Queries to Test</h3>
+        <ul>
+            <li><strong>Michel Meth</strong> - Should find "Michael Meth" (Dean)</li>
+            <li><strong>Lisa Josefi</strong> - Should find "Lisa Josefik" (Executive Assistant)</li>
+            <li><strong>Michael Meth</strong> - Should find the Dean</li>
+            <li><strong>Lisa Josefik</strong> - Should find the Executive Assistant</li>
+            <li><strong>Bernadette Humphrey</strong> - Should find Head of Acquisitions</li>
+        </ul>
+    </div>
+
+    <script>
+        let externalKnowledgeBase = null;
+
+        async function loadExternalKnowledgeBase() {
+            try {
+                const orgChartResponse = await fetch('knowledge_base/org_chart_sjsu_king_library.md');
+                const contactsResponse = await fetch('knowledge_base/contacts_help_services.md');
+                const parkingResponse = await fetch('knowledge_base/sjsu_parking_permit_request.md');
+                const eventFundingResponse = await fetch('knowledge_base/event_funding_request.md');
+                
+                const orgChartText = await orgChartResponse.text();
+                const contactsText = await contactsResponse.text();
+                const parkingText = await parkingResponse.text();
+                const eventFundingText = await eventFundingResponse.text();
+                
+                externalKnowledgeBase = {
+                    orgChart: orgChartText,
+                    contacts: contactsText,
+                    parking: parkingText,
+                    eventFunding: eventFundingText
+                };
+                console.log('External knowledge base loaded successfully');
+            } catch (error) {
+                console.error('Could not load external knowledge base files:', error);
+                externalKnowledgeBase = null;
+            }
+        }
+
+        function searchExternalKnowledgeBase(query) {
+            if (!externalKnowledgeBase) return null;
+            
+            const lowerQuery = query.toLowerCase();
+            const results = [];
+            
+            // Handle name variations
+            const nameVariations = {
+                'michel meth': ['michael meth'],
+                'lisa josefi': ['lisa josefik'],
+                'lisa josefik': ['lisa josefi']
+            };
+            
+            let searchTerms = [lowerQuery];
+            if (nameVariations[lowerQuery]) {
+                searchTerms = searchTerms.concat(nameVariations[lowerQuery]);
+            }
+            
+            // Search in all knowledge base files
+            const files = [
+                { name: 'orgChart', content: externalKnowledgeBase.orgChart },
+                { name: 'contacts', content: externalKnowledgeBase.contacts },
+                { name: 'parking', content: externalKnowledgeBase.parking },
+                { name: 'eventFunding', content: externalKnowledgeBase.eventFunding }
+            ];
+            
+            for (const file of files) {
+                const lines = file.content.split('\n');
+                for (const line of lines) {
+                    const lowerLine = line.toLowerCase();
+                    for (const term of searchTerms) {
+                        if (lowerLine.includes(term)) {
+                            results.push(line.trim());
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            return results.length > 0 ? results : null;
+        }
+
+        function testSearch() {
+            const query = document.getElementById('test-query').value;
+            const resultDiv = document.getElementById('test-result');
+            
+            if (!query) {
+                resultDiv.textContent = 'Please enter a query to test.';
+                return;
+            }
+            
+            const results = searchExternalKnowledgeBase(query);
+            if (results) {
+                const formattedResults = results.map(result => {
+                    return result.replace(/^[-*]\s*/, '').replace(/\*\*(.*?)\*\*/g, '$1');
+                });
+                resultDiv.textContent = 'Found results:\n' + formattedResults.join('\n');
+            } else {
+                resultDiv.textContent = 'No results found for: ' + query;
+            }
+        }
+
+        // Load knowledge base when page loads
+        loadExternalKnowledgeBase();
+    </script>
+</body>
+</html>
