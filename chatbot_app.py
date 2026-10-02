@@ -4,6 +4,8 @@ from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 import re
 
+from answer import best_answer
+
 embed_model = HuggingFaceEmbedding(model_name="all-MiniLM-L6-v2")
 
 st.title("SJSU Library Chatbot 🤖 (Free Local Mode)")
@@ -25,21 +27,8 @@ if user_input:
     response = query_engine.query(user_input)
     response_text = ""
 
-    user_words = set(user_input.lower().split())
-
-    for node in response.source_nodes:
-        lines = node.get_text().splitlines()
-        for line in lines:
-            plain_line = re.sub(r'\*\*|__|[#\-]', '', line).strip().lower()
-            if (
-                "dean" in plain_line
-                and "assistant" not in plain_line
-                and (plain_line.startswith("dean") or "dean: " in plain_line)
-            ):
-                response_text = line.strip()
-                break
-        if response_text:
-            break
+    texts = [node.get_text() for node in response.source_nodes]
+    response_text = best_answer(user_input, texts)
 
     if not response_text:
         response_text = "No relevant information found."
