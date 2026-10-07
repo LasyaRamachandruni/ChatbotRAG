@@ -185,7 +185,8 @@ class Retriever:
             dense_rank = sorted(range(len(self.chunks)), key=lambda i: -dense[i])
             relevant = relevant or dense[dense_rank[0]] >= MIN_COSINE
             fused = Counter()
-            for rank_list in (lex_rank, dense_rank):
+            lex_matches = [i for i in lex_rank if lexical[i] > 0]
+            for rank_list in (lex_matches, dense_rank):
                 for r, i in enumerate(rank_list):
                     fused[i] += 1 / (60 + r)
             ranked = [i for i, _ in fused.most_common()]
