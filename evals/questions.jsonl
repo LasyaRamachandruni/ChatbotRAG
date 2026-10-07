@@ -1,0 +1,33 @@
+{"question": "Who do I contact about course reserves in Leganto?", "expected_source": "contacts_help_services.md", "expected_section": "Course reserves, Leganto, Pay-Per-Use"}
+{"question": "OneSearch isn't returning the right results, who should I tell?", "expected_source": "contacts_help_services.md", "expected_section": "OneSearch Functionality"}
+{"question": "Who handles interlibrary loan requests?", "expected_source": "contacts_help_services.md", "expected_section": "ILL, Rapido (CSU+)"}
+{"question": "My office computer won't start, how do I reach desktop support?", "expected_source": "contacts_help_services.md", "expected_section": "Desktop Support - IT Crowd"}
+{"question": "Who manages the KLEVR Lab?", "expected_source": "contacts_help_services.md", "expected_section": "KLEVR Lab"}
+{"question": "Who can help me deposit my thesis in ScholarWorks?", "expected_source": "contacts_help_services.md", "expected_section": "Institutional Repository - ScholarWorks"}
+{"question": "Who do I email about setting up an eBook trial?", "expected_source": "contacts_help_services.md", "expected_section": "Electronic Resources - eBooks, trials"}
+{"question": "Who is in charge of the library website?", "expected_source": "contacts_help_services.md", "expected_section": "Web Team"}
+{"question": "Who do I ask about using the microfilm machines?", "expected_source": "contacts_help_services.md", "expected_section": "Microfilm Machines"}
+{"question": "Who sets up AV equipment in library classrooms?", "expected_source": "contacts_help_services.md", "expected_section": "Media Services, Classrooms, AV Setups"}
+{"question": "I need an Alma Analytics report, who builds those?", "expected_source": "contacts_help_services.md", "expected_section": "Alma Analytics - reports, dashboards"}
+{"question": "Who handles cataloging and metadata?", "expected_source": "contacts_help_services.md", "expected_section": "Metadata - Cataloging"}
+{"question": "Who manages LibAnswers and LibChat?", "expected_source": "contacts_help_services.md", "expected_section": "LibApps (LibAnswers, LibChat, etc.)"}
+{"question": "Who is the contact for the library chatbot?", "expected_source": "contacts_help_services.md", "expected_section": "Chatbot"}
+{"question": "Who handles streaming media requests?", "expected_source": "contacts_help_services.md", "expected_section": "Acquisitions - Serials holdings, Streaming Media requests"}
+{"question": "A student's library account is blocked, who manages patron accounts?", "expected_source": "contacts_help_services.md", "expected_section": "Patron account management"}
+{"question": "Who do I talk to about government publications?", "expected_source": "contacts_help_services.md", "expected_section": "Government Publications"}
+{"question": "Who runs the Technology Training Center?", "expected_source": "contacts_help_services.md", "expected_section": "Technology Training Center (TTC)"}
+{"question": "Who handles visiting scholars and instructional affiliates?", "expected_source": "contacts_help_services.md", "expected_section": "Visiting Scholars, Instructional Affiliates"}
+{"question": "Who is responsible for the library's digital collections?", "expected_source": "contacts_help_services.md", "expected_section": "Digital Collections"}
+{"question": "Who is the dean of the King Library?", "expected_source": "org_chart_sjsu_king_library.md", "expected_section": "Dean’s Office"}
+{"question": "Who is the executive assistant to the dean?", "expected_source": "org_chart_sjsu_king_library.md", "expected_section": "Dean’s Office"}
+{"question": "Who is the associate dean for innovation and resource management?", "expected_source": "org_chart_sjsu_king_library.md", "expected_section": "Associate Deans"}
+{"question": "Who is the head of acquisitions?", "expected_source": "org_chart_sjsu_king_library.md", "expected_section": "Resource Management & Delivery"}
+{"question": "Who is the library's director of development?", "expected_source": "org_chart_sjsu_king_library.md", "expected_section": "Dean’s Office"}
+{"question": "Which faculty librarians work at the King Library?", "expected_source": "org_chart_sjsu_king_library.md", "expected_section": "Faculty Librarians"}
+{"question": "How do I request a parking permit for a guest?", "expected_source": "sjsu_parking_permit_request.md", "expected_section": "SJSU Parking Permit Request"}
+{"question": "How do I request funding for a library event?", "expected_source": "event_funding_request.md", "expected_section": "Event Funding Request Form"}
+{"question": "What are the library hours during finals week?", "expected_source": null}
+{"question": "How much is the fine for an overdue book?", "expected_source": null}
+{"question": "Can I reserve a group study room?", "expected_source": null}
+{"question": "How do I print from my laptop in the library?", "expected_source": null}
+{"question": "When is the SJSU tuition payment deadline?", "expected_source": null}
