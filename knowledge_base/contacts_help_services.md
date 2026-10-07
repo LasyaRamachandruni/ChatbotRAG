@@ -2,7 +2,7 @@
 
 | Service | Who to Contact | How to Contact Them | Department |
 |--------|----------------|---------------------|------------|
-| Acquisitions - Funds, Vendors | Bernadette Humprey | bernadette.humphrey@sjsu.edu | Resource Management & Delivery |
+| Acquisitions - Funds, Vendors | Bernadette Humphrey | bernadette.humphrey@sjsu.edu | Resource Management & Delivery |
 | Acquisitions - Serials holdings, Streaming Media requests | Jill Stahl | jill.stahl@sjsu.edu | Resource Management & Delivery |
 | Acquisitions - Purchasing, Licensing | Elena Seto | elena.seto@sjsu.edu | Resource Management & Delivery |
 | Alma Analytics - reports, dashboards | Jung Ah Lee | library-data-analytics-group@sjsu.edu | Resource Management & Delivery |
