@@ -85,7 +85,7 @@ def chunk_markdown(text: str, source: str) -> list[Chunk]:
         if content:
             name = section or title
             label = f"{title} > {section}" if section and title else name
-            chunks.append(Chunk(f"{source}#{len(chunks) + 1}", source, name, f"{label}\n{content}"))
+            chunks.append(Chunk(f"{source}#{len(chunks) + 1}", source, name, f"## {label}\n{content}"))
         body = []
 
     for raw in text.splitlines():
@@ -108,7 +108,7 @@ def chunk_markdown(text: str, source: str) -> list[Chunk]:
                 header = cells
                 continue
             row = "; ".join(f"{h}: {c}" for h, c in zip(header, cells) if c)
-            chunks.append(Chunk(f"{source}#{len(chunks) + 1}", source, cells[0], f"{title}\n{row}"))
+            chunks.append(Chunk(f"{source}#{len(chunks) + 1}", source, cells[0], f"## {title}\n{row}"))
             continue
         header = None
         if line:
