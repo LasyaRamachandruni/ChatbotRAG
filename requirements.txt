@@ -1,5 +1,3 @@
 streamlit
-llama-index==0.10.28
-sentence-transformers
-llama-index-embeddings-huggingface
-
+# optional, for RETRIEVER=hybrid (downloads all-MiniLM-L6-v2 on first run)
+# sentence-transformers
