@@ -40,8 +40,8 @@ pytest
 
 ## Web chatbot
 
-`index.html` + `script.js` + `style.css` is a standalone chat page. `embed.html` explains how to add it to a Google Sites page, and `google-sites-embed.html` contains the embed snippet. The other `*-chatbot.html` files are alternative designs.
+`index.html` + `script.js` + `style.css` is a standalone chat page. `embed.html` explains how to add it to a Google Sites page, and `google-sites-embed.html` contains the embed snippet. Alternative page designs (`*-chatbot.html`, `new.html`) are kept in `extras/designs/`.
 
 ## Also in this repo
 
-`finals_week_template.html` / `.txt` is a reusable email template for Finals Week volunteer and donor outreach. See [FINALS_WEEK_TEMPLATE.md](FINALS_WEEK_TEMPLATE.md).
+`extras/email/finals_week_template.html` / `.txt` is a reusable email template for Finals Week volunteer and donor outreach. See [extras/email/FINALS_WEEK_TEMPLATE.md](extras/email/FINALS_WEEK_TEMPLATE.md).
