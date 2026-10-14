@@ -26,6 +26,7 @@ INDEX_DIR = Path(__file__).parent / ".index"
 
 # Words that carry no meaning for matching. "library", "sjsu" and "king" appear in
 # almost every question and chunk, so they are dropped too.
+# fmt: off
 STOPWORDS = {
     "a", "an", "and", "are", "as", "at", "be", "by", "can", "could", "do", "does", "for",
     "from", "has", "have", "how", "i", "if", "in", "is", "it", "its", "me", "my", "of",
@@ -35,6 +36,7 @@ STOPWORDS = {
     "want", "know", "any", "some", "someone", "anyone", "help", "contact", "email",
     "library", "libraries", "sjsu", "king", "s",
 }
+# fmt: on
 
 # BM25 score the top chunk needs before we treat the knowledge base as covering the
 # question. One meaningful word in common with a chunk scores roughly 2-4.
@@ -85,7 +87,9 @@ def chunk_markdown(text: str, source: str) -> list[Chunk]:
         if content:
             name = section or title
             label = f"{title} > {section}" if section and title else name
-            chunks.append(Chunk(f"{source}#{len(chunks) + 1}", source, name, f"## {label}\n{content}"))
+            chunks.append(
+                Chunk(f"{source}#{len(chunks) + 1}", source, name, f"## {label}\n{content}")
+            )
         body = []
 
     for raw in text.splitlines():
@@ -107,8 +111,10 @@ def chunk_markdown(text: str, source: str) -> list[Chunk]:
                 flush()
                 header = cells
                 continue
-            row = "; ".join(f"{h}: {c}" for h, c in zip(header, cells) if c)
-            chunks.append(Chunk(f"{source}#{len(chunks) + 1}", source, cells[0], f"## {title}\n{row}"))
+            row = "; ".join(f"{h}: {c}" for h, c in zip(header, cells, strict=False) if c)
+            chunks.append(
+                Chunk(f"{source}#{len(chunks) + 1}", source, cells[0], f"## {title}\n{row}")
+            )
             continue
         header = None
         if line:
@@ -144,7 +150,7 @@ class BM25:
 
     def scores(self, query: list[str]) -> list[float]:
         out = []
-        for tf, length in zip(self.tfs, self.lens):
+        for tf, length in zip(self.tfs, self.lens, strict=True):
             s = 0.0
             for term in set(query):
                 f = tf.get(term, 0)
@@ -181,7 +187,7 @@ class Retriever:
             scores = lexical
         else:
             q = self.embedder([question])[0]
-            dense = [float(sum(a * b for a, b in zip(q, e))) for e in self.embeddings]
+            dense = [float(sum(a * b for a, b in zip(q, e, strict=True))) for e in self.embeddings]
             dense_rank = sorted(range(len(self.chunks)), key=lambda i: -dense[i])
             relevant = relevant or dense[dense_rank[0]] >= MIN_COSINE
             fused = Counter()
@@ -204,8 +210,9 @@ def _minilm_embedder():
     return lambda texts: model.encode(texts, normalize_embeddings=True).tolist()
 
 
-def build_retriever(kb_dir: Path = KB_DIR, index_dir: Path = INDEX_DIR,
-                    mode: str | None = None) -> Retriever:
+def build_retriever(
+    kb_dir: Path = KB_DIR, index_dir: Path = INDEX_DIR, mode: str | None = None
+) -> Retriever:
     """Load the saved index for the current knowledge base, or build and save it."""
     mode = (mode or os.getenv("RETRIEVER", "bm25")).lower()
     fingerprint = kb_fingerprint(kb_dir)

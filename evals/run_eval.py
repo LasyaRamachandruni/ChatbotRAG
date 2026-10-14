@@ -34,7 +34,11 @@ def main() -> None:
     parser.add_argument("--out", help="write the report to this Markdown file")
     args = parser.parse_args()
 
-    questions = [json.loads(line) for line in (ROOT / "evals/questions.jsonl").read_text().splitlines() if line]
+    questions = [
+        json.loads(line)
+        for line in (ROOT / "evals/questions.jsonl").read_text().splitlines()
+        if line
+    ]
     retriever = build_retriever()
     llm = None
     if args.generate:
@@ -56,7 +60,9 @@ def main() -> None:
         else:
             in_scope += 1
             hits += expected in sources
-            ok = (expected, q["expected_section"]) in [(h.chunk.source, h.chunk.section) for h in top]
+            ok = (expected, q["expected_section"]) in [
+                (h.chunk.source, h.chunk.section) for h in top
+            ]
             chunk_hits += ok
             false_refusals += not top
         note = ""
@@ -65,7 +71,7 @@ def main() -> None:
             good = result.mode == "generated" and expected in [s for _, s in result.sources]
             grounded += good
             note = f"{result.mode}: {result.text}"
-        want = f'{expected} / {q["expected_section"]}' if expected else "(refuse)"
+        want = f"{expected} / {q['expected_section']}" if expected else "(refuse)"
         got = "; ".join(f"{h.chunk.source} / {h.chunk.section}" for h in top) or "(refused)"
         rows.append((ok, q["question"], want, got, note))
 
@@ -74,13 +80,22 @@ def main() -> None:
         "",
         f"- hit@3 (file): {hits}/{in_scope} = {hits / in_scope:.0%}",
         f"- hit@3 (chunk): {chunk_hits}/{in_scope} = {chunk_hits / in_scope:.0%}",
-        f"- refusal accuracy (out of scope): {refused_ok}/{out_scope} = {refused_ok / out_scope:.0%}",
+        f"- refusal accuracy (out of scope): {refused_ok}/{out_scope} = "
+        f"{refused_ok / out_scope:.0%}",
         f"- false refusals (in scope): {false_refusals}/{in_scope}",
     ]
     if llm is not None:
-        lines.append(f"- grounded answers citing the expected file ({llm_name}): "
-                     f"{grounded}/{in_scope} = {grounded / in_scope:.0%}")
-    lines += ["", "pass = expected chunk in the top 3, or correctly refused.", "", "| pass | question | expected | top-3 retrieved |", "|---|---|---|---|"]
+        lines.append(
+            f"- grounded answers citing the expected file ({llm_name}): "
+            f"{grounded}/{in_scope} = {grounded / in_scope:.0%}"
+        )
+    lines += [
+        "",
+        "pass = expected chunk in the top 3, or correctly refused.",
+        "",
+        "| pass | question | expected | top-3 retrieved |",
+        "|---|---|---|---|",
+    ]
     for ok, question, expected, got, note in rows:
         lines.append(f"| {'yes' if ok else 'NO'} | {question} | {expected} | {got} |")
         if note:

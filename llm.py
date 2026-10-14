@@ -13,7 +13,7 @@ from __future__ import annotations
 import json
 import os
 import urllib.request
-from typing import Callable
+from collections.abc import Callable
 
 # (system prompt, user prompt) -> answer text
 LLM = Callable[[str, str], str]
@@ -43,9 +43,14 @@ def openai_llm(model: str, api_key: str) -> LLM:
     def call(system: str, user: str) -> str:
         data = _post(
             f"{base}/chat/completions",
-            {"model": model, "temperature": 0,
-             "messages": [{"role": "system", "content": system},
-                          {"role": "user", "content": user}]},
+            {
+                "model": model,
+                "temperature": 0,
+                "messages": [
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": user},
+                ],
+            },
             {"Authorization": f"Bearer {api_key}"},
         )
         return data["choices"][0]["message"]["content"]
@@ -57,8 +62,13 @@ def anthropic_llm(model: str, api_key: str) -> LLM:
     def call(system: str, user: str) -> str:
         data = _post(
             "https://api.anthropic.com/v1/messages",
-            {"model": model, "max_tokens": 400, "temperature": 0, "system": system,
-             "messages": [{"role": "user", "content": user}]},
+            {
+                "model": model,
+                "max_tokens": 400,
+                "temperature": 0,
+                "system": system,
+                "messages": [{"role": "user", "content": user}],
+            },
             {"x-api-key": api_key, "anthropic-version": "2023-06-01"},
         )
         return "".join(b.get("text", "") for b in data["content"])
@@ -70,9 +80,11 @@ def gemini_llm(model: str, api_key: str) -> LLM:
     def call(system: str, user: str) -> str:
         data = _post(
             f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
-            {"systemInstruction": {"parts": [{"text": system}]},
-             "contents": [{"role": "user", "parts": [{"text": user}]}],
-             "generationConfig": {"temperature": 0}},
+            {
+                "systemInstruction": {"parts": [{"text": system}]},
+                "contents": [{"role": "user", "parts": [{"text": user}]}],
+                "generationConfig": {"temperature": 0},
+            },
             {"x-goog-api-key": api_key},
         )
         return "".join(p.get("text", "") for p in data["candidates"][0]["content"]["parts"])
@@ -84,9 +96,15 @@ def ollama_llm(model: str, host: str) -> LLM:
     def call(system: str, user: str) -> str:
         data = _post(
             f"{host.rstrip('/')}/api/chat",
-            {"model": model, "stream": False, "options": {"temperature": 0},
-             "messages": [{"role": "system", "content": system},
-                          {"role": "user", "content": user}]},
+            {
+                "model": model,
+                "stream": False,
+                "options": {"temperature": 0},
+                "messages": [
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": user},
+                ],
+            },
             {},
             timeout=180,
         )
@@ -110,7 +128,9 @@ def get_llm() -> tuple[str, LLM] | None:
     if not provider:
         return None
     if provider not in DEFAULT_MODELS:
-        raise ValueError(f"Unknown LLM_PROVIDER {provider!r}; use one of {', '.join(DEFAULT_MODELS)}")
+        raise ValueError(
+            f"Unknown LLM_PROVIDER {provider!r}; use one of {', '.join(DEFAULT_MODELS)}"
+        )
 
     model = env.get("LLM_MODEL") or DEFAULT_MODELS[provider]
     if provider == "ollama":

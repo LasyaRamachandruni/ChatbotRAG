@@ -65,11 +65,14 @@ def test_answer_with_no_grounded_sentences_is_refused(retriever):
     assert result.text == REFUSAL
 
 
-@pytest.mark.parametrize("question", [
-    "What are the library hours?",
-    "How do I renew a book?",
-    "What's the wifi password?",
-])
+@pytest.mark.parametrize(
+    "question",
+    [
+        "What are the library hours?",
+        "How do I renew a book?",
+        "What's the wifi password?",
+    ],
+)
 def test_out_of_scope_question_is_refused_without_calling_the_llm(retriever, question):
     fake = FakeLLM("should not be used [1].")
     result = answer(question, retriever, fake)
@@ -85,8 +88,14 @@ def test_llm_saying_not_found_is_refused(retriever):
 
 
 def test_falls_back_to_quoting_without_api_key(retriever, monkeypatch):
-    for var in ["LLM_PROVIDER", "OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GEMINI_API_KEY",
-                "GOOGLE_API_KEY", "OLLAMA_HOST"]:
+    for var in [
+        "LLM_PROVIDER",
+        "OPENAI_API_KEY",
+        "ANTHROPIC_API_KEY",
+        "GEMINI_API_KEY",
+        "GOOGLE_API_KEY",
+        "OLLAMA_HOST",
+    ]:
         monkeypatch.delenv(var, raising=False)
     assert llm_module.get_llm() is None
     result = answer("How do I request a parking permit?", retriever, None)
@@ -96,7 +105,13 @@ def test_falls_back_to_quoting_without_api_key(retriever, monkeypatch):
 
 
 def test_provider_chosen_from_env(monkeypatch):
-    for var in ["LLM_PROVIDER", "OPENAI_API_KEY", "GEMINI_API_KEY", "GOOGLE_API_KEY", "OLLAMA_HOST"]:
+    for var in [
+        "LLM_PROVIDER",
+        "OPENAI_API_KEY",
+        "GEMINI_API_KEY",
+        "GOOGLE_API_KEY",
+        "OLLAMA_HOST",
+    ]:
         monkeypatch.delenv(var, raising=False)
     monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
     name, _ = llm_module.get_llm()
@@ -111,7 +126,9 @@ def test_provider_chosen_from_env(monkeypatch):
 def test_sentence_splitting_keeps_citations_with_their_sentence():
     text = "Ask Dr. Becker [2]. The lab is in room 1. [1]\nEmail sharon.thompson@sjsu.edu [1]."
     assert split_sentences(text) == [
-        "Ask Dr. Becker [2].", "The lab is in room 1. [1]", "Email sharon.thompson@sjsu.edu [1].",
+        "Ask Dr. Becker [2].",
+        "The lab is in room 1. [1]",
+        "Email sharon.thompson@sjsu.edu [1].",
     ]
     kept, dropped = check_grounding("A [1, 2]. B [0]. C [3].", n_sources=2)
     assert kept == ["A [1, 2]."]
@@ -135,8 +152,10 @@ def test_hybrid_retrieval_with_fake_embeddings():
     chunks = load_chunks()
 
     def embed(texts):  # 1-d "embedding" that puts cars and parking close together
-        return [[1.0] if "park" in t.lower() or "car" in re.findall(r"[a-z]+", t.lower()) else [0.0]
-                for t in texts]
+        return [
+            [1.0] if "park" in t.lower() or "car" in re.findall(r"[a-z]+", t.lower()) else [0.0]
+            for t in texts
+        ]
 
     hybrid = Retriever(chunks, embedder=embed)
     hits = hybrid.search("Where can I leave my car?")  # no word in common with the KB

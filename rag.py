@@ -67,7 +67,7 @@ def split_sentences(text: str) -> list[str]:
         if sentences and lead:
             # citation written after the period belongs to the previous sentence
             sentences[-1] += " " + lead.group(1).strip()
-            piece = piece[lead.end():].strip(" .,;")
+            piece = piece[lead.end() :].strip(" .,;")
         if piece:
             sentences.append(piece)
     return sentences
@@ -110,4 +110,6 @@ def answer(question: str, retriever: Retriever, llm: LLM | None = None, k: int =
     if not kept:
         return Answer(REFUSAL, "refused", dropped=dropped)
     used = sorted({n for s in kept for n in cited_numbers(s)})
-    return Answer(" ".join(kept), "generated", [(n, hits[n - 1].chunk.source) for n in used], dropped)
+    return Answer(
+        " ".join(kept), "generated", [(n, hits[n - 1].chunk.source) for n in used], dropped
+    )

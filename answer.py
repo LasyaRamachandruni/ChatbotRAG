@@ -8,11 +8,13 @@ from __future__ import annotations
 
 import re
 
+# fmt: off
 STOPWORDS = {
     "a", "an", "and", "are", "can", "do", "does", "for", "how", "i", "in", "is", "it",
     "me", "my", "of", "on", "or", "please", "the", "to", "what", "when", "where", "who",
     "with", "you", "your", "about", "tell", "get",
 }
+# fmt: on
 
 
 def _words(text: str) -> set[str]:
@@ -48,7 +50,9 @@ def best_answer(question: str, texts: list[str], fallback_chars: int = 300) -> s
                 heading, heading_words, heading_has_content = plain, _words(plain), False
                 continue
             heading_has_content = True
-            candidates.append((len(keywords & _words(plain)) + 0.5 * len(keywords & heading_words), plain))
+            candidates.append(
+                (len(keywords & _words(plain)) + 0.5 * len(keywords & heading_words), plain)
+            )
         if not heading_has_content and heading:
             candidates.append((len(keywords & heading_words), heading))
         for score, line in candidates:
