@@ -34,11 +34,10 @@ def main() -> None:
     parser.add_argument("--out", help="write the report to this Markdown file")
     args = parser.parse_args()
 
-    questions = [
-        json.loads(line)
-        for line in (ROOT / "evals/questions.jsonl").read_text().splitlines()
-        if line
-    ]
+    questions_file = ROOT / "evals/questions.jsonl"
+    if not questions_file.exists():
+        sys.exit(f"Eval questions not found: {questions_file}")
+    questions = [json.loads(line) for line in questions_file.read_text().splitlines() if line]
     retriever = build_retriever()
     llm = None
     if args.generate:

@@ -11,10 +11,19 @@ Only the standard library is used (plain HTTPS requests), so no SDKs are needed.
 from __future__ import annotations
 
 import json
+import logging
 import os
+import urllib.error
 import urllib.request
 from collections.abc import Callable
 from typing import Any
+
+logger = logging.getLogger(__name__)
+
+
+class LLMError(RuntimeError):
+    """An LLM provider could not be reached or returned an error."""
+
 
 # (system prompt, user prompt) -> answer text
 LLM = Callable[[str, str], str]
@@ -34,8 +43,15 @@ def _post(url: str, payload: dict[str, Any], headers: dict[str, str], timeout: f
         headers={"Content-Type": "application/json", **headers},
         method="POST",
     )
-    with urllib.request.urlopen(req, timeout=timeout) as resp:
-        return json.loads(resp.read())
+    logger.debug("POST %s", url)
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            return json.loads(resp.read())
+    except urllib.error.HTTPError as err:
+        detail = err.read().decode(errors="replace")[:300]
+        raise LLMError(f"{url} returned HTTP {err.code}: {detail}") from err
+    except (urllib.error.URLError, TimeoutError) as err:
+        raise LLMError(f"Could not reach {url}: {err}") from err
 
 
 def openai_llm(model: str, api_key: str) -> LLM:

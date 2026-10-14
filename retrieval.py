@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 import math
 import os
 import re
@@ -23,8 +24,23 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
-KB_DIR = Path(__file__).parent / "knowledge_base"
-INDEX_DIR = Path(__file__).parent / ".index"
+logger = logging.getLogger(__name__)
+
+_HERE = Path(__file__).parent
+# Both can be moved with environment variables (e.g. a mounted volume in Docker).
+KB_DIR = Path(os.getenv("KB_DIR") or _HERE / "knowledge_base")
+INDEX_DIR = Path(os.getenv("INDEX_DIR") or _HERE / ".index")
+
+
+def _env_float(name: str, default: float) -> float:
+    raw = os.getenv(name)
+    if raw is None or raw == "":
+        return default
+    try:
+        return float(raw)
+    except ValueError:
+        raise ValueError(f"{name} must be a number, got {raw!r}") from None
+
 
 # Words that carry no meaning for matching. "library", "sjsu" and "king" appear in
 # almost every question and chunk, so they are dropped too.
@@ -42,9 +58,9 @@ STOPWORDS = {
 
 # BM25 score the top chunk needs before we treat the knowledge base as covering the
 # question. One meaningful word in common with a chunk scores roughly 2-4.
-MIN_BM25_SCORE = float(os.getenv("MIN_BM25_SCORE", "2.0"))
+MIN_BM25_SCORE = _env_float("MIN_BM25_SCORE", 2.0)
 # Cosine similarity that counts as relevant in hybrid mode.
-MIN_COSINE = float(os.getenv("MIN_COSINE", "0.45"))
+MIN_COSINE = _env_float("MIN_COSINE", 0.45)
 
 
 @dataclass(frozen=True)
@@ -130,16 +146,24 @@ def chunk_markdown(text: str, source: str) -> list[Chunk]:
     return chunks
 
 
+def _kb_files(kb_dir: Path) -> list[Path]:
+    if not kb_dir.is_dir():
+        raise FileNotFoundError(
+            f"Knowledge base folder not found: {kb_dir} (set KB_DIR to the folder of .md files)"
+        )
+    return sorted(kb_dir.glob("*.md"))
+
+
 def load_chunks(kb_dir: Path = KB_DIR) -> list[Chunk]:
     chunks: list[Chunk] = []
-    for path in sorted(kb_dir.glob("*.md")):
+    for path in _kb_files(kb_dir):
         chunks.extend(chunk_markdown(path.read_text(encoding="utf-8"), path.name))
     return chunks
 
 
 def kb_fingerprint(kb_dir: Path = KB_DIR) -> str:
     h = hashlib.sha256()
-    for path in sorted(kb_dir.glob("*.md")):
+    for path in _kb_files(kb_dir):
         h.update(path.name.encode())
         h.update(path.read_bytes())
     return h.hexdigest()[:16]
@@ -217,7 +241,12 @@ class Retriever:
 
 
 def _minilm_embedder() -> Embedder:
-    from sentence_transformers import SentenceTransformer  # optional dependency
+    try:
+        from sentence_transformers import SentenceTransformer  # optional dependency
+    except ImportError as err:
+        raise ImportError(
+            "RETRIEVER=hybrid needs sentence-transformers: pip install sentence-transformers"
+        ) from err
 
     model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 
@@ -237,10 +266,12 @@ def build_retriever(
     index_file = index_dir / f"chunks-{fingerprint}.json"
     if index_file.exists():
         chunks = [Chunk(**c) for c in json.loads(index_file.read_text())]
+        logger.info("Loaded %d chunks from %s", len(chunks), index_file)
     else:
         chunks = load_chunks(kb_dir)
         index_dir.mkdir(exist_ok=True)
         index_file.write_text(json.dumps([asdict(c) for c in chunks], indent=1))
+        logger.info("Indexed %d chunks from %s into %s", len(chunks), kb_dir, index_file)
 
     if mode != "hybrid":
         return Retriever(chunks)

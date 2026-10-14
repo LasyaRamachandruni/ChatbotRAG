@@ -1,8 +1,12 @@
+import logging
+
 import streamlit as st
 
 from llm import get_llm
 from rag import answer
 from retrieval import Retriever, build_retriever
+
+logger = logging.getLogger(__name__)
 
 
 @st.cache_resource(show_spinner="Loading knowledge base...")
@@ -34,6 +38,7 @@ if user_input:
     try:
         result = answer(user_input, retriever, llm)
     except Exception as err:  # network / API errors: still answer from the knowledge base
+        logger.warning("LLM call failed, quoting the knowledge base: %s", err)
         st.warning(f"The LLM call failed ({err}); quoting the knowledge base instead.")
         result = answer(user_input, retriever, None)
 
