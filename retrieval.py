@@ -18,8 +18,10 @@ import math
 import os
 import re
 from collections import Counter
+from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import Any
 
 KB_DIR = Path(__file__).parent / "knowledge_base"
 INDEX_DIR = Path(__file__).parent / ".index"
@@ -53,6 +55,10 @@ class Chunk:
     text: str
 
 
+# list of texts -> one unit-length vector per text
+Embedder = Callable[[list[str]], list[list[float]]]
+
+
 @dataclass(frozen=True)
 class Hit:
     chunk: Chunk
@@ -78,7 +84,8 @@ def _cells(line: str) -> list[str]:
 
 def chunk_markdown(text: str, source: str) -> list[Chunk]:
     chunks: list[Chunk] = []
-    title, section, body = "", "", []
+    title, section = "", ""
+    body: list[str] = []
     header: list[str] | None = None
 
     def flush() -> None:
@@ -139,7 +146,7 @@ def kb_fingerprint(kb_dir: Path = KB_DIR) -> str:
 
 
 class BM25:
-    def __init__(self, docs: list[list[str]], k1: float = 1.5, b: float = 0.75):
+    def __init__(self, docs: list[list[str]], k1: float = 1.5, b: float = 0.75) -> None:
         self.k1, self.b = k1, b
         self.tfs = [Counter(d) for d in docs]
         self.lens = [len(d) for d in docs]
@@ -164,10 +171,15 @@ class BM25:
 class Retriever:
     """BM25 over knowledge-base chunks, optionally fused with MiniLM embeddings."""
 
-    def __init__(self, chunks: list[Chunk], embedder=None, embeddings=None):
+    def __init__(
+        self,
+        chunks: list[Chunk],
+        embedder: Embedder | None = None,
+        embeddings: list[list[float]] | None = None,
+    ) -> None:
         self.chunks = chunks
         self.bm25 = BM25([tokenize(c.text) for c in chunks])
-        self.embedder = embedder  # callable: list[str] -> 2D array of unit vectors
+        self.embedder = embedder
         self.embeddings = embeddings
         if embedder is not None and embeddings is None:
             self.embeddings = embedder([c.text for c in chunks])
@@ -184,37 +196,43 @@ class Retriever:
 
         if self.embedder is None:
             ranked = [i for i in lex_rank if lexical[i] > 0]
-            scores = lexical
+            scores: list[float] = lexical
         else:
+            assert self.embeddings is not None  # set in __init__ whenever embedder is
             q = self.embedder([question])[0]
             dense = [float(sum(a * b for a, b in zip(q, e, strict=True))) for e in self.embeddings]
             dense_rank = sorted(range(len(self.chunks)), key=lambda i: -dense[i])
             relevant = relevant or dense[dense_rank[0]] >= MIN_COSINE
-            fused = Counter()
+            fused: dict[int, float] = {}
             lex_matches = [i for i in lex_rank if lexical[i] > 0]
             for rank_list in (lex_matches, dense_rank):
                 for r, i in enumerate(rank_list):
-                    fused[i] += 1 / (60 + r)
-            ranked = [i for i, _ in fused.most_common()]
-            scores = [fused[i] for i in range(len(self.chunks))]
+                    fused[i] = fused.get(i, 0.0) + 1 / (60 + r)
+            ranked = sorted(fused, key=lambda i: fused[i], reverse=True)  # stable on ties
+            scores = [fused.get(i, 0.0) for i in range(len(self.chunks))]
 
         if not relevant:
             return []
         return [Hit(self.chunks[i], scores[i]) for i in ranked[:k]]
 
 
-def _minilm_embedder():
+def _minilm_embedder() -> Embedder:
     from sentence_transformers import SentenceTransformer  # optional dependency
 
     model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
-    return lambda texts: model.encode(texts, normalize_embeddings=True).tolist()
+
+    def embed(texts: list[str]) -> list[list[float]]:
+        vectors: Any = model.encode(texts, normalize_embeddings=True)
+        return [list(map(float, v)) for v in vectors.tolist()]
+
+    return embed
 
 
 def build_retriever(
     kb_dir: Path = KB_DIR, index_dir: Path = INDEX_DIR, mode: str | None = None
 ) -> Retriever:
     """Load the saved index for the current knowledge base, or build and save it."""
-    mode = (mode or os.getenv("RETRIEVER", "bm25")).lower()
+    mode = (mode or os.getenv("RETRIEVER") or "bm25").lower()
     fingerprint = kb_fingerprint(kb_dir)
     index_file = index_dir / f"chunks-{fingerprint}.json"
     if index_file.exists():

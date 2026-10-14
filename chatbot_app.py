@@ -2,11 +2,11 @@ import streamlit as st
 
 from llm import get_llm
 from rag import answer
-from retrieval import build_retriever
+from retrieval import Retriever, build_retriever
 
 
 @st.cache_resource(show_spinner="Loading knowledge base...")
-def load_retriever():
+def load_retriever() -> Retriever:
     # Built once per server process and saved to .index/, not on every rerun.
     return build_retriever()
 

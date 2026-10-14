@@ -14,6 +14,7 @@ import json
 import os
 import urllib.request
 from collections.abc import Callable
+from typing import Any
 
 # (system prompt, user prompt) -> answer text
 LLM = Callable[[str, str], str]
@@ -26,7 +27,7 @@ DEFAULT_MODELS = {
 }
 
 
-def _post(url: str, payload: dict, headers: dict, timeout: float = 60) -> dict:
+def _post(url: str, payload: dict[str, Any], headers: dict[str, str], timeout: float = 60) -> Any:
     req = urllib.request.Request(
         url,
         data=json.dumps(payload).encode(),
@@ -53,7 +54,7 @@ def openai_llm(model: str, api_key: str) -> LLM:
             },
             {"Authorization": f"Bearer {api_key}"},
         )
-        return data["choices"][0]["message"]["content"]
+        return str(data["choices"][0]["message"]["content"])
 
     return call
 
@@ -108,7 +109,7 @@ def ollama_llm(model: str, host: str) -> LLM:
             {},
             timeout=180,
         )
-        return data["message"]["content"]
+        return str(data["message"]["content"])
 
     return call
 
@@ -135,7 +136,8 @@ def get_llm() -> tuple[str, LLM] | None:
     model = env.get("LLM_MODEL") or DEFAULT_MODELS[provider]
     if provider == "ollama":
         return f"ollama/{model}", ollama_llm(model, keys["ollama"] or "http://localhost:11434")
-    if not keys[provider]:
+    key = keys[provider]
+    if not key:
         return None  # provider chosen but no key: fall back to quoting
     factory = {"openai": openai_llm, "anthropic": anthropic_llm, "gemini": gemini_llm}[provider]
-    return f"{provider}/{model}", factory(model, keys[provider])
+    return f"{provider}/{model}", factory(model, key)
