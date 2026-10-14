@@ -1,0 +1,57 @@
+[project]
+name = "sjsu-library-chatbot"
+version = "0.2.0"
+description = "RAG chatbot for the SJSU King Library: BM25 retrieval, cited LLM answers and a grounding check"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+# The RAG modules (rag.py, retrieval.py, answer.py, llm.py) use only the standard library.
+app = ["streamlit==1.66.0"]
+# RETRIEVER=hybrid downloads all-MiniLM-L6-v2 on first run.
+hybrid = ["sentence-transformers>=3.0,<6"]
+dev = [
+    "pytest==9.1.1",
+    "pytest-cov==7.1.0",
+    "ruff==0.17.0",
+    "mypy==2.4.0",
+    "pre-commit==4.7.0",
+]
+
+[tool.setuptools]
+py-modules = ["answer", "llm", "rag", "retrieval"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = ["*.ipynb", "extras"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.ruff.lint.per-file-ignores]
+"evals/*.py" = ["E402"]  # sys.path is set before the project imports
+
+[tool.mypy]
+python_version = "3.11"
+files = ["answer.py", "llm.py", "rag.py", "retrieval.py", "chatbot_app.py", "evals/run_eval.py"]
+strict = true
+ignore_missing_imports = true
+warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+disallow_untyped_defs = false
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["."]
+omit = ["tests/*", "evals/*", "extras/*", "chatbot_app.py"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
